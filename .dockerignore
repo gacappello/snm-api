@@ -1,0 +1,5 @@
+node_modules
+
+.vscode/
+.DE_Store/
+.idea/

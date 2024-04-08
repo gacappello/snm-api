@@ -1,0 +1,19 @@
+{
+  "name": "snm-api",
+  "version": "1.0.0",
+  "description": "The backend API for SNM",
+  "main": "app/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon app/index.js",
+    "prod": "node app/index.js"
+  },
+  "author": "Giovanni Alberici",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.3.0"
+  }
+}

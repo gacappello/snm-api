@@ -1,3 +1,4 @@
+const path = require("path");
 const express = require("express");
 const bodyParser = require("body-parser");
 
@@ -37,10 +38,25 @@ process.on("SIGTERM", freeWebAPI);
 process.on("SIGINT", freeWebAPI);
 
 app.use(bodyParser.json());
+app.use((req, res, next) => {
+  res.locals.title = "SNM";
+  next();
+});
 
-app.get('/', function(req, res) {
-  res.send("CIAO");
-})
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
+
+app.get("/", function (req, res) {
+  res.render("pages/home");
+});
+
+app.use((req, res, next) => {
+  res.render("pages/not_found");
+});
+
+app.use((err, req, res, next) => {
+  res.render("pages/error");
+});
 
 app.listen(webPort, initWebAPI).on("error", function (error) {
   ERROR(error.message);

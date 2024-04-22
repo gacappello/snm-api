@@ -9,4 +9,5 @@ module.exports = {
   MONGODB_USER: process.env.MONGODB_USER,
   MONGODB_HOST: process.env.MONGODB_HOST,
   MONGODB_PASSWORD: process.env.MONGODB_PASSWORD,
+  PEPPER: process.env.PEPPER,
 };

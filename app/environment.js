@@ -10,4 +10,5 @@ module.exports = {
   MONGODB_HOST: process.env.MONGODB_HOST,
   MONGODB_PASSWORD: process.env.MONGODB_PASSWORD,
   PEPPER: process.env.PEPPER,
+  SESSION_SECRET: process.env.SESSION_SECRET,
 };

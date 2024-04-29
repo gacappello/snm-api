@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
-const jwt = require("jwt");
 
 const env = require("../../environment");
 const pepper = env.PEPPER;
@@ -10,7 +9,7 @@ const userCredentialsSchema = new mongoose.Schema({
   email: {
     type: String,
     required: [true, "Email is required!"],
-    unique: [true, "Email must be unique!"],
+    unique: [true, "Email already exists!"],
     validate: {
       validator: function (value) {
         return validator.isEmail(value);
@@ -20,8 +19,8 @@ const userCredentialsSchema = new mongoose.Schema({
   },
   username: {
     type: String,
-    required: [true, "username is required!"],
-    unique: [true, "Username must be unique!"],
+    required: [true, "Username is required!"],
+    unique: [true, "Username already taken!"],
     min: [5, "Username must be at least 5 characters!"],
     max: [30, "username must be at maximum 30 characters!"],
     validate: {
@@ -50,6 +49,15 @@ const userCredentialsSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
   },
+  genres: {
+    type: [String],
+  },
+  friends: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: "UserCredentials",
+    },
+  ],
 });
 
 userCredentialsSchema.pre("save", async function (next) {

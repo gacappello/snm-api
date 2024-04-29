@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const env = require('../environment');
+const mongoose = require("mongoose");
+const env = require("../environment");
 
 const database = env.MONGODB_DATABASE;
 const port = env.MONGODB_PORT;

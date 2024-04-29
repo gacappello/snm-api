@@ -1,6 +1,10 @@
 const path = require("path");
 const express = require("express");
 const bodyParser = require("body-parser");
+const session = require("express-session");
+
+const authMW = require("./middleware/auth");
+const authRoutes = require("./route/auth");
 
 const env = require("./environment");
 const database = require("./database/database");
@@ -8,13 +12,20 @@ const database = require("./database/database");
 const app = express();
 
 const webPort = env.WEB_API_PORT;
+const sessionSecret = env.SESSION_SECRET;
 
-function INFO(info) {
-  console.log(info);
+const store = new session.MemoryStore();
+
+function INFO() {
+  let args = Array.prototype.slice.call(arguments);
+  args.unshift(`[${new Date().toLocaleString()}]`);
+  console.log.apply(console, args);
 }
 
-function ERROR(error) {
-  console.error(error);
+function ERROR() {
+  let args = Array.prototype.slice.call(arguments);
+  args.unshift(`[${new Date().toLocaleString()}]`);
+  console.error.apply(console, args);
 }
 
 async function initWebAPI() {
@@ -37,25 +48,44 @@ async function freeWebAPI() {
 process.on("SIGTERM", freeWebAPI);
 process.on("SIGINT", freeWebAPI);
 
+app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.json());
-app.use((req, res, next) => {
-  res.locals.title = "SNM";
-  next();
-});
+
+app.use(
+  session({
+    secret: sessionSecret,
+    cookie: { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 },
+    saveUninitialized: true,
+    store: store,
+  }),
+);
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
+app.use("/", authRoutes);
+
+app.use(authMW.requireAuth);
+
 app.get("/", function (req, res) {
+  res.redirect("/home");
+});
+
+app.get("/home", function (req, res) {
   res.render("pages/home");
 });
 
-app.use((req, res, next) => {
+app.get("/not_found", function (req, res) {
   res.render("pages/not_found");
 });
 
-app.use((err, req, res, next) => {
+app.get("/error", function (req, res) {
   res.render("pages/error");
+});
+
+// Matches all routes
+app.use((req, res, next) => {
+  res.redirect("/not_found");
 });
 
 app.listen(webPort, initWebAPI).on("error", function (error) {

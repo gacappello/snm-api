@@ -4,7 +4,10 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 
 const authMW = require("./middleware/auth");
+
 const authRoutes = require("./route/auth");
+const playlistsRoutes = require("./route/playlists");
+const usersRoutes = require("./route/users");
 
 const env = require("./environment");
 const database = require("./database/database");
@@ -63,10 +66,17 @@ app.use(
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
+// Auth routes
 app.use("/", authRoutes);
 
+// From here all routes need auth
 app.use(authMW.requireAuth);
 
+// Other routes
+app.use("/playlists", playlistsRoutes);
+app.use("/users", usersRoutes);
+
+// Home routes
 app.get("/", function (req, res) {
   res.redirect("/home");
 });
@@ -79,11 +89,7 @@ app.get("/not_found", function (req, res) {
   res.render("pages/not_found");
 });
 
-app.get("/error", function (req, res) {
-  res.render("pages/error");
-});
-
-// Matches all routes
+// Default route
 app.use((req, res, next) => {
   res.redirect("/not_found");
 });

@@ -13,7 +13,9 @@ async function get_login(req, res) {
   res.render("pages/login");
 }
 
-async function post_login(req, res) {}
+async function post_login(req, res) {
+  const { cred, password } = req.body;
+}
 
 async function get_logout(req, res) {
   res.render("pages/logout");

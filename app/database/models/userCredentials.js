@@ -52,7 +52,13 @@ const userCredentialsSchema = new mongoose.Schema({
   genres: {
     type: [String],
   },
-  friends: [
+  followers: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: "UserCredentials",
+    },
+  ],
+  follows: [
     {
       type: mongoose.Types.ObjectId,
       ref: "UserCredentials",

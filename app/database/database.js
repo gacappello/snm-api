@@ -8,7 +8,7 @@ const host = env.MONGODB_HOST;
 const password = env.MONGODB_PASSWORD;
 
 async function createConnection() {
-  const str = `mongodb://${user}:${password}@${host}:${port}/?authMechanism=DEFAULT&authSource=${database}`;
+  const str = `mongodb://${user}:${password}@${host}:${port}/${database}?authMechanism=DEFAULT&authSource=${database}`;
   return await mongoose.connect(str);
 }
 

@@ -7,6 +7,7 @@ async function get_register(req, res) {
 
 async function post_register(req, res) {
   const { username, password, email } = req.body;
+  const user = await userCredentials.findOne({ username: username });
 }
 
 async function get_login(req, res) {

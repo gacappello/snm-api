@@ -3,6 +3,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 
+const { INFO, ERROR } = require("./utils/api-error");
+
 const authMW = require("./middleware/auth");
 
 const authRoutes = require("./route/auth");
@@ -18,18 +20,6 @@ const webPort = env.WEB_API_PORT;
 const sessionSecret = env.SESSION_SECRET;
 
 const store = new session.MemoryStore();
-
-function INFO() {
-  let args = Array.prototype.slice.call(arguments);
-  args.unshift(`[${new Date().toLocaleString()}]`);
-  console.log.apply(console, args);
-}
-
-function ERROR() {
-  let args = Array.prototype.slice.call(arguments);
-  args.unshift(`[${new Date().toLocaleString()}]`);
-  console.error.apply(console, args);
-}
 
 async function initWebAPI() {
   try {
@@ -53,18 +43,24 @@ process.on("SIGINT", freeWebAPI);
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.json());
-
 app.use(
   session({
     secret: sessionSecret,
-    cookie: { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 },
-    saveUninitialized: true,
+    cookie: { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 14 },
+    saveUninitialized: false,
     store: store,
   }),
 );
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
+
+app.use(function (req, res, next) {
+  INFO(`ip: ${req.ip} at: ${req.originalUrl}`);
+  INFO(req.session);
+  INFO(req.session.id);
+  next();
+})
 
 // Auth routes
 app.use("/", authRoutes);

@@ -34,10 +34,6 @@ const userCredentialsSchema = new mongoose.Schema({
     type: String,
     required: [true, "A password is required!"],
   },
-  salt: {
-    type: String,
-    required: [true, "Salt is required!"],
-  },
   birthDate: {
     type: Date,
     required: [true, "Provide a valid birth date!"],
@@ -70,12 +66,18 @@ userCredentialsSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
   }
+
+  this.password += pepper;
   const salt = await bcrypt.genSalt(16);
-  const hash = await bcrypt.hash(this.password, salt);
-  this.salt = salt;
-  this.password = hash + pepper;
+  this.password = await bcrypt.hash(this.password, salt);
   this.updatedAt = Date.now();
   next();
 });
+
+userCredentialsSchema.methods.compareHash = async function(data) {
+  const hash = this.password;
+  const pw = data + pepper;
+  return await bcrypt.compare(pw, hash);
+}
 
 module.exports = mongoose.model("UserCredentials", userCredentialsSchema);

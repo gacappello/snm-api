@@ -1,5 +1,5 @@
 function isAuth(req) {
-  if (req.session.authorized) return true;
+  if (req.session.user) return true;
   return false;
 }
 

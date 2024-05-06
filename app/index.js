@@ -57,8 +57,6 @@ app.set("view engine", "ejs");
 
 app.use(function (req, res, next) {
   INFO(`ip: ${req.ip} at: ${req.originalUrl}`);
-  INFO(req.session);
-  INFO(req.session.id);
   next();
 })
 
@@ -66,7 +64,7 @@ app.use(function (req, res, next) {
 app.use("/", authRoutes);
 
 // From here all routes need auth
-app.use(authMW.requireAuth);
+// app.use(authMW.requireAuth);
 
 // Other routes
 app.use("/playlists", playlistsRoutes);

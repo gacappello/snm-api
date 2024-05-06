@@ -1,8 +1,10 @@
 class APIError extends Error {
-  constructor(obj) {
-    super(obj.message || "Something bad happened");
-    this.message = obj.message || "Something bad happened";
-    this.status = obj.status || 500;
+  constructor(obj={}) {
+    const msg = obj.message || "Something bad happened";
+    const status = obj.status || 500;
+    super(msg);
+    this.message = msg;
+    this.status = status;
     this.name = this.constructor.name;
     Error.captureStackTrace(this, this.constructor);
   }
@@ -10,13 +12,13 @@ class APIError extends Error {
 
 function INFO() {
   let args = Array.prototype.slice.call(arguments);
-  args.unshift(`[${new Date().toLocaleString()}]`);
+  args.unshift(`\x1b[32m[${new Date().toLocaleString()}]\x1b[m`);
   console.log.apply(console, args);
 }
 
 function ERROR() {
   let args = Array.prototype.slice.call(arguments);
-  args.unshift(`[${new Date().toLocaleString()}]`);
+  args.unshift(`\x1b[31m[${new Date().toLocaleString()}]\x1b[m`);
   console.error.apply(console, args);
 }
 

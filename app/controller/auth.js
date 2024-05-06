@@ -57,7 +57,7 @@ async function post_login(req, res, next) {
       throw new APIError({ message: "Bad Credentials", status: 401 });
     }
 
-    req.session.user = record.username;
+    req.session.userId = record._id;
     res.redirect("/home");
   } catch (error) {
     next(error);

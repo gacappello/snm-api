@@ -31,6 +31,30 @@ const userCredentialsSchema = new mongoose.Schema(
         message: "Invalid username format!",
       },
     },
+    firstName: {
+      type: String,
+      required: [true, "A name is required!"],
+      min: [5, "First name must be at least 5 characters!"],
+      max: [30, "First name must be at maximum 30 characters!"],
+      validate: {
+        validator: function (value) {
+          return validator.isAlphanumeric(value);
+        },
+        message: "Invalid username format!",
+      },
+    },
+    lastName: {
+      type: String,
+      required: [true, "A name is required!"],
+      min: [5, "Last name must be at least 5 characters!"],
+      max: [30, "Last name must be at maximum 30 characters!"],
+      validate: {
+        validator: function (value) {
+          return validator.isAlphanumeric(value);
+        },
+        message: "Invalid username format!",
+      },
+    },
     password: {
       type: String,
       required: [true, "A password is required!"],

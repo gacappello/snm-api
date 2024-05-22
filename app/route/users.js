@@ -8,6 +8,7 @@ const router = express.Router();
 router.get("/get/:user", controller.get.getUser);
 router.post("/follow/:user", controller.post.followUser);
 router.post("/unfollow/:user", controller.post.unfollowUser);
+router.put("/update", controller.put.update);
 router.use(errorHandler);
 
 // Views

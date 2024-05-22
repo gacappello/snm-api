@@ -4,8 +4,7 @@ const validator = require("validator");
 const playlistsSchema = new mongoose.Schema(
   {
     user: {
-      type: mongoose.Types.ObjectId,
-      ref: "UserCredentials",
+      type: String,
       required: [true, "Provide an owner!"],
     },
     access: {

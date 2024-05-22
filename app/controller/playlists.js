@@ -11,14 +11,30 @@ async function get_get(req, res, next) {
   const sessionId = req.session.userId;
   try {
     const me = await userCredentials.findById(sessionId);
-    if(!me) throw new APIError();
+    if (!me) throw new APIError();
 
-    const followsPlaylists = {};
-    for(follow of me.follows){
-      const record = await playlists
+    const all = {
+      myPlaylists: [],
+      friendsPlaylists: [],
+      othersPlaylists: [],
+    };
+
+    const myPlaylists = await playlists.find({user: sessionId});
+    for (pl of myPlaylists) {
+      all.myPlaylists.push(pl);
     }
 
-    const myPlaylists = await playlists.find({ user: sessionId });
+    for (follow of me.follows) {
+      const record = await playlists
+        .find({user: follow})
+        .where("access")
+        .ne("private")
+        .exec();
+      for (pl of record) {
+        all.friendsPlaylists.push(pl);
+      }
+    }
+
     const othersPlaylists = await playlists
       .find({})
       .where("user")
@@ -26,12 +42,57 @@ async function get_get(req, res, next) {
       .and("access")
       .equals("public")
       .exec();
+
+    for (pl of othersPlaylists) {
+      all.othersPlaylists.push(pl);
+    }
+
+    res.json(all);
   } catch (error) {
     next(error);
   }
 }
 
-async function get_get_user(req, res, next) {}
+async function get_get_user(req, res, next) {
+  const sessionUser = req.session.user;
+  const user = req.params.user;
+  try {
+    const record = await playlists.find({user: user});
+    if (!record) throw new APIError("Username not found");
+
+    const pub = [];
+    const pri = [];
+    const fol = [];
+
+    for(pl of record) {
+      if(pl.access.equals("public"))
+        pub.push(pl);
+      if(pl.access.equals("private"))
+        pri.push(pl);
+      if(pl.access.equals("followers"))
+        fol.push(pl);
+    }
+
+    const playlists = {playlists: []};
+    if (user.equals(sessionUser)) {
+      playlists.playlists.concat(pub);
+      playlists.playlists.concat(pri);
+      playlists.playlists.concat(fol);
+      return res.json(playlists);
+    }
+
+    const me = await userCredentials.findOne({username: sessionUser});
+    if(!me) throw new APIError();
+
+    if(me.follows.includes(user)) {
+      // playlist.
+    }
+
+    res.json(playlists);
+  } catch (error) {
+    next(error);
+  }
+}
 
 async function get_get_user_id(req, res, next) {}
 

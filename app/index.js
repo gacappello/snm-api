@@ -64,7 +64,7 @@ app.use(function (req, res, next) {
 app.use("/", authRoutes);
 
 // From here all routes need auth
-// app.use(authMW.requireAuth);
+app.use(authMW.requireAuth);
 
 // Other routes
 app.use("/playlists", playlistsRoutes);

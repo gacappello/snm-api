@@ -9,6 +9,7 @@ async function get_show_user_id(req, res, next) {}
 
 async function get_get(req, res, next) {
   const sessionId = req.session.userId;
+  const sessionUser = req.session.user;
   try {
     const me = await userCredentials.findById(sessionId);
     if (!me) throw new APIError();
@@ -19,7 +20,7 @@ async function get_get(req, res, next) {
       othersPlaylists: [],
     };
 
-    const myPlaylists = await playlists.find({user: sessionId});
+    const myPlaylists = await playlists.find({user: sessionUser});
     for (pl of myPlaylists) {
       all.myPlaylists.push(pl);
     }
@@ -54,49 +55,90 @@ async function get_get(req, res, next) {
 }
 
 async function get_get_user(req, res, next) {
+  const sessionId = req.session.userId;
   const sessionUser = req.session.user;
   const user = req.params.user;
   try {
-    const record = await playlists.find({user: user});
+    const me = await userCredentials.findById(sessionId);
+    if (!me) throw new APIError();
+
+    const record = await all.find({user: user});
     if (!record) throw new APIError("Username not found");
 
     const pub = [];
     const pri = [];
     const fol = [];
 
-    for(pl of record) {
-      if(pl.access.equals("public"))
+    for (pl of record) {
+      if (pl.access.equals("public"))
         pub.push(pl);
-      if(pl.access.equals("private"))
+      if (pl.access.equals("private"))
         pri.push(pl);
-      if(pl.access.equals("followers"))
+      if (pl.access.equals("followers"))
         fol.push(pl);
     }
 
-    const playlists = {playlists: []};
+    const all = {playlists: []};
     if (user.equals(sessionUser)) {
-      playlists.playlists.concat(pub);
-      playlists.playlists.concat(pri);
-      playlists.playlists.concat(fol);
-      return res.json(playlists);
+      all.playlists.concat(pub);
+      all.playlists.concat(pri);
+      all.playlists.concat(fol);
+      return res.json(all);
     }
 
-    const me = await userCredentials.findOne({username: sessionUser});
-    if(!me) throw new APIError();
-
-    if(me.follows.includes(user)) {
-      // playlist.
+    if (me.follows.includes(user)) {
+      all.playlists.concat(pub);
+      all.playlists.concat(fol);
+      return res.json(all);
     }
 
-    res.json(playlists);
+    all.playlists.concat(pub);
+    res.json(all);
   } catch (error) {
     next(error);
   }
 }
 
-async function get_get_user_id(req, res, next) {}
+async function get_get_id(req, res, next) {
+  const sessionId = req.session.userId;
+  const sessionUser = req.session.user;
+  const id = req.params.id;
+  try {
+    const me = await userCredentials.findById(sessionId);
+    if (!me) throw new APIError();
 
-async function delete_delete(req, res, next) {}
+    const record = playlists.findById(id);
+    if (!record) throw new APIError({message: "Not found", status: 404});
+
+    if (sessionUser.equals(record.user))
+      return res.json(record);
+
+    if (record.access.equals("private"))
+      throw new APIError({message: "Unauthorized", status: 401});
+
+    if (record.access.equals("followers")) {
+      if (me.follows.includes(record.user)) {
+        return res.json(record);
+      }
+    }
+
+    res.json(record);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function delete_delete(req, res, next) {
+  const sessionId = req.session.userId;
+  const sessionUser = req.session.user;
+  const id = req.body.id;
+  try {
+    const me = await userCredentials.findById(sessionId);
+    if (!me) throw new APIError();
+  } catch (error) {
+    next(error);
+  }
+}
 
 async function post_add(req, res, next) {}
 
@@ -109,7 +151,7 @@ module.exports = {
     showUserId: get_show_user_id,
     get: get_get,
     getUser: get_get_user,
-    getUserId: get_get_user_id,
+    getId: get_get_id,
   },
   post: {
     add: post_add,

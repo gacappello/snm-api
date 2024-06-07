@@ -39,8 +39,8 @@ async function get_get(req, res, next) {
     const othersPlaylists = await playlists
       .find({})
       .where("user")
-      .ne(sessionId)
-      .and("access")
+      .ne(sessionUser)
+      .where("access")
       .equals("public")
       .exec();
 
@@ -135,14 +135,73 @@ async function delete_delete(req, res, next) {
   try {
     const me = await userCredentials.findById(sessionId);
     if (!me) throw new APIError();
+
+    const record = await playlists.findById(id);
+    if (!record) throw new APIError({message: "Not found", status: 404});
+
+    if (!record.user.equals(sessionUser))
+      throw new APIError({message: "Unauthorized", status: 401});
+
+    await playlists.findByIdAndDelete(id);
+    res.json(record);
   } catch (error) {
     next(error);
   }
 }
 
-async function post_add(req, res, next) {}
+async function post_add(req, res, next) {
+  const sessionId = req.session.userId;
+  const sessionUser = req.session.user;
+  const { name, description, tags, songs, access } = req.body;
+  try {
+    const me = await userCredentials.findById(sessionId);
+    if (!me) throw new APIError();
 
-async function put_modify(req, res, next) {}
+    const playlist = {
+      name: name,
+      description: description || `A playlist from ${sessionUser}`,
+      tags: tags || [],
+      songs: songs || [],
+      access: access
+    };
+
+    const doc = new playlists(playlist);
+    await doc.save();
+
+    res.send();
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function put_modify(req, res, next) {
+  const sessionId = req.session.userId;
+  const sessionUser = req.session.user;
+  const { id, name, description, tags, songs, access } = req.body;
+
+  const update = {};
+  if(name) update.name = name;
+  if(description) update.description = description;
+  if(tags) update.tags = tags;
+  if(songs) update.songs = songs;
+  if(access) update.access = access;
+
+  try {
+    if (!id) throw new APIError({message: "Provide an ID"});
+
+    const me = await userCredentials.findById(sessionId);
+    if (!me) throw new APIError();
+
+    const record = await playlists.findOneAndUpdate({_id: id, user: sessionUser}, update, {
+      new: true,
+    });
+    if (!record) throw new APIError({message: "Not found", status: 404});
+
+    res.send();
+  } catch(error) {
+    next(error);
+  }
+}
 
 module.exports = {
   get: {

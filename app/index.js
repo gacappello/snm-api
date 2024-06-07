@@ -14,6 +14,8 @@ const usersRoutes = require("./route/users");
 const env = require("./environment");
 const database = require("./database/database");
 
+const spotifyApi = require("./spotify");
+
 const app = express();
 
 const webPort = env.WEB_API_PORT;
@@ -26,6 +28,11 @@ async function initWebAPI() {
     INFO("Trying connection to database...");
     await database.createConnection();
     INFO("Connected");
+    INFO("Trying to get auth from Spotify...");
+    const o = await spotifyApi.clientCredentialsGrant();
+    console.log(o.body['access_token']);
+    spotifyApi.setAccessToken(o.body['access_token'])
+    INFO("Auth confirmed");
   } catch (error) {
     ERROR(error.message);
     process.exit(1);

@@ -1,4 +1,4 @@
-const {APIError} = require("../utils/api-error");
+const { APIError } = require("../utils/api-error");
 const userCredentials = require("../database/models/userCredentials");
 
 async function get_show(req, res, next) {}
@@ -8,10 +8,10 @@ async function get_show_user(req, res, next) {}
 async function get_get_user(req, res, next) {
   const user = req.params.user;
   try {
-    const record = await userCredentials.findOne({username: user});
-    if (!record) return res.json({user: null});
+    const record = await userCredentials.findOne({ username: user });
+    if (!record) return res.json({ user: null });
     const safe = record.getSafe();
-    return res.json({user: safe});
+    res.json({ user: safe });
   } catch (error) {
     next(error);
   }
@@ -25,7 +25,7 @@ async function post_follow_user(req, res, next) {
     const me = await userCredentials.findById(sessionId);
     if (!me) throw new APIError();
 
-    const record = await userCredentials.findOne({username: user});
+    const record = await userCredentials.findOne({ username: user });
     if (!record) throw new APIError("Username is unknown");
 
     if (sessionUser.equals(user)) return res.send();
@@ -34,7 +34,7 @@ async function post_follow_user(req, res, next) {
       await me.save();
     }
 
-    return res.send();
+    res.send();
   } catch (error) {
     next(error);
   }
@@ -45,7 +45,7 @@ async function post_unfollow_user(req, res, next) {
   const sessionId = req.session.userId;
   try {
     const owner = await userCredentials.findById(sessionId);
-    const record = await userCredentials.findOne({username: user});
+    const record = await userCredentials.findOne({ username: user });
     if (!owner) throw new APIError();
     if (!record) throw new APIError("Username is unknown");
 
@@ -56,7 +56,8 @@ async function post_unfollow_user(req, res, next) {
       });
       await owner.save();
     }
-    return res.send();
+
+    res.send();
   } catch (error) {
     next(error);
   }
@@ -64,17 +65,20 @@ async function post_unfollow_user(req, res, next) {
 
 async function put_update(req, res, next) {
   const sessionId = req.session.userId;
-  const {firstName, lastName} = req.params;
+  const { firstName, lastName, genres } = req.params;
 
   const update = {};
   if (firstName) update.firstName = firstName;
   if (lastName) update.lastName = lastName;
+  if (genres) update.genres = lastName;
 
   try {
     const owner = await userCredentials.findByIdAndUpdate(sessionId, update, {
-      new: true
+      new: true,
     });
     if (!owner) throw new APIError();
+
+    res.send();
   } catch (error) {
     next(error);
   }
@@ -92,5 +96,5 @@ module.exports = {
   },
   put: {
     update: put_update,
-  }
+  },
 };

@@ -1,11 +1,6 @@
 const playlists = require("../database/models/playlists");
 const userCredentials = require("../database/models/userCredentials");
-
-async function get_show(req, res, next) {}
-
-async function get_show_user(req, res, next) {}
-
-async function get_show_user_id(req, res, next) {}
+const { APIError } = require("../utils/api-error");
 
 async function get_get(req, res, next) {
   const sessionId = req.session.userId;
@@ -57,7 +52,7 @@ async function get_get(req, res, next) {
 async function get_get_user(req, res, next) {
   const sessionId = req.session.userId;
   const sessionUser = req.session.user;
-  const user = req.params.user;
+  const { user } = req.params;
   try {
     const me = await userCredentials.findById(sessionId);
     if (!me) throw new APIError();
@@ -102,7 +97,7 @@ async function get_get_user(req, res, next) {
 async function get_get_id(req, res, next) {
   const sessionId = req.session.userId;
   const sessionUser = req.session.user;
-  const id = req.params.id;
+  const { id } = req.params;
   try {
     const me = await userCredentials.findById(sessionId);
     if (!me) throw new APIError();
@@ -128,21 +123,17 @@ async function get_get_id(req, res, next) {
   }
 }
 
-async function delete_delete(req, res, next) {
+async function delete_delete_id(req, res, next) {
   const sessionId = req.session.userId;
   const sessionUser = req.session.user;
-  const id = req.body.id;
+  const { id } = req.params;
   try {
     const me = await userCredentials.findById(sessionId);
     if (!me) throw new APIError();
 
-    const record = await playlists.findById(id);
+    const record = await playlists.findOneAndDelete({_id: id, user: sessionUser});
     if (!record) throw new APIError({message: "Not found", status: 404});
 
-    if (!record.user.equals(sessionUser))
-      throw new APIError({message: "Unauthorized", status: 401});
-
-    await playlists.findByIdAndDelete(id);
     res.json(record);
   } catch (error) {
     next(error);
@@ -174,10 +165,11 @@ async function post_add(req, res, next) {
   }
 }
 
-async function put_modify(req, res, next) {
+async function put_modify_id(req, res, next) {
   const sessionId = req.session.userId;
   const sessionUser = req.session.user;
-  const { id, name, description, tags, songs, access } = req.body;
+  const { name, description, tags, songs, access } = req.body;
+  const { id } = req.params;
 
   const update = {};
   if(name) update.name = name;
@@ -187,8 +179,6 @@ async function put_modify(req, res, next) {
   if(access) update.access = access;
 
   try {
-    if (!id) throw new APIError({message: "Provide an ID"});
-
     const me = await userCredentials.findById(sessionId);
     if (!me) throw new APIError();
 
@@ -205,9 +195,6 @@ async function put_modify(req, res, next) {
 
 module.exports = {
   get: {
-    show: get_show,
-    showUser: get_show_user,
-    showUserId: get_show_user_id,
     get: get_get,
     getUser: get_get_user,
     getId: get_get_id,
@@ -216,9 +203,9 @@ module.exports = {
     add: post_add,
   },
   delete: {
-    delete: delete_delete,
+    deleteId: delete_delete_id,
   },
   put: {
-    modify: put_modify,
+    modifyId: put_modify_id,
   },
 };

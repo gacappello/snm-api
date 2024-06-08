@@ -1,15 +1,17 @@
-const path = require("path");
 const express = require("express");
 const bodyParser = require("body-parser");
 const session = require("express-session");
+const cors = require("cors");
 
-const { INFO, ERROR } = require("./utils/api-error");
+const { INFO, ERROR, APIError } = require("./utils/api-error");
 
-const authMW = require("./middleware/auth");
+const requireAuth = require("./middleware/auth");
+const errorHandler = require("./middleware/error");
 
-const authRoutes = require("./route/auth");
-const playlistsRoutes = require("./route/playlists");
-const usersRoutes = require("./route/users");
+const authRoutes = require("./routes/auth");
+const playlistsRoutes = require("./routes/playlists");
+const usersRoutes = require("./routes/users");
+const spotifyRoutes = require("./routes/spotify");
 
 const env = require("./environment");
 const database = require("./database/database");
@@ -21,6 +23,9 @@ const app = express();
 const webPort = env.WEB_API_PORT;
 const sessionSecret = env.SESSION_SECRET;
 
+const vuePort = env.VUE_PORT;
+const vueHost = env.VUE_HOST;
+
 const store = new session.MemoryStore();
 
 async function initWebAPI() {
@@ -30,8 +35,8 @@ async function initWebAPI() {
     INFO("Connected");
     INFO("Trying to get auth from Spotify...");
     const o = await spotifyApi.clientCredentialsGrant();
-    console.log(o.body['access_token']);
-    spotifyApi.setAccessToken(o.body['access_token'])
+    INFO("Token: " + o.body["access_token"]);
+    spotifyApi.setAccessToken(o.body["access_token"]);
     INFO("Auth confirmed");
   } catch (error) {
     ERROR(error.message);
@@ -48,7 +53,6 @@ async function freeWebAPI() {
 process.on("SIGTERM", freeWebAPI);
 process.on("SIGINT", freeWebAPI);
 
-app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.json());
 app.use(
   session({
@@ -56,44 +60,38 @@ app.use(
     cookie: { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 14 },
     saveUninitialized: false,
     store: store,
-  }),
+  })
 );
-
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "ejs");
 
 app.use(function (req, res, next) {
   INFO(`ip: ${req.ip} at: ${req.originalUrl}`);
   next();
-})
+});
+
+app.use(
+  cors({
+    origin: `http://${vueHost}:${vuePort}`,
+    credentials: true,
+  })
+);
 
 // Auth routes
 app.use("/", authRoutes);
 
 // From here all routes need auth
-app.use(authMW.requireAuth);
+// app.use(requireAuth);
 
 // Other routes
 app.use("/playlists", playlistsRoutes);
 app.use("/users", usersRoutes);
-
-// Home routes
-app.get("/", function (req, res) {
-  res.redirect("/home");
-});
-
-app.get("/home", function (req, res) {
-  res.render("pages/home");
-});
-
-app.get("/not_found", function (req, res) {
-  res.render("pages/not_found");
-});
+app.use("/sapi", spotifyRoutes);
 
 // Default route
 app.use((req, res, next) => {
-  res.redirect("/not_found");
+  next(new APIError({ message: "Not Found", status: 404 }));
 });
+
+app.use(errorHandler);
 
 app.listen(webPort, initWebAPI).on("error", function (error) {
   ERROR(error.message);

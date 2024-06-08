@@ -5,7 +5,7 @@ function handleError(err, req, res, next) {
   const status = 500;
   try {
     if (err instanceof APIError)
-      return res.status(status).json({ message: err.message, status: err.status, error: true });
+      return res.status(err.status || status).json({ message: err.message, status: err.status, error: true });
     ERROR(err);
     return res.status(status).json({ message: msg, status: status, error: true });
   } catch (error) {

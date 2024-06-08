@@ -13,4 +13,6 @@ module.exports = {
   SESSION_SECRET: process.env.SESSION_SECRET,
   CLIENT_ID: process.env.CLIENT_ID,
   CLIENT_SECRET: process.env.CLIENT_SECRET,
+  VUE_PORT: process.env.VUE_PORT,
+  VUE_HOST: process.env.VUE_HOST,
 };

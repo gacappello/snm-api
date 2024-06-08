@@ -1,10 +1,6 @@
 const { APIError } = require("../utils/api-error");
 const userCredentials = require("../database/models/userCredentials");
 
-async function get_show(req, res, next) {}
-
-async function get_show_user(req, res, next) {}
-
 async function get_get_user(req, res, next) {
   const user = req.params.user;
   try {
@@ -86,8 +82,6 @@ async function put_update(req, res, next) {
 
 module.exports = {
   get: {
-    show: get_show,
-    showUser: get_show_user,
     getUser: get_get_user,
   },
   post: {

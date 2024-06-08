@@ -1,0 +1,19 @@
+<template>
+  <div>
+    <LoginPage />
+  </div>
+</template>
+
+<script>
+import LoginPage from "./components/LoginPage.vue";
+
+export default {
+  components: {
+    LoginPage,
+  },
+};
+</script>
+
+<style>
+/* Add your CSS styles here */
+</style>

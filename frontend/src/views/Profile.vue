@@ -18,7 +18,7 @@
               <div>
                 <v-img
                   aspect-ratio="1"
-                  src="/public/user.jpg"
+                  src="/user.jpg"
                   color="ternary"
                   class="border-lg rounded-xl flex-grow-0"
                   width="250px"

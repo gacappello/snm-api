@@ -232,6 +232,14 @@ async function getTrack(id, data) {
   }
 }
 
+async function makeSearch(data) {
+  try {
+    return await instance.post("/sapi/search", data);
+  } catch (error) {
+    return error.response;
+  }
+}
+
 async function getRecommendations(data) {
   try {
     return await instance.post("/sapi/recommendations", data);

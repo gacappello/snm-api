@@ -17,6 +17,8 @@ router.get("/artists/:id/related-artists", controller.get.artistsIdRelated);
 router.post("/tracks", controller.post.tracks);
 router.post("/tracks/:id", controller.post.tracksId);
 
+router.post("/search", controller.post.search);
+
 router.post("/recommendations", controller.post.recommendations);
 router.get(
   "/recommendations/available-genre-seeds",

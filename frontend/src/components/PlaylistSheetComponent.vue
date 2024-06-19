@@ -15,7 +15,13 @@
         {{ name.charAt(0).toUpperCase() + name.slice(1) }}
       </v-card-title>
       <template v-slot:image>
-        <v-img :src="src" aspect-ratio="1" height="350px" cover>
+        <v-img
+          :src="src"
+          aspect-ratio="1"
+          height="350px"
+          lazy-src="/disc.png"
+          cover
+        >
           <template v-slot:placeholder>
             <div class="d-flex align-center justify-center fill-height">
               <v-progress-circular

@@ -6,22 +6,26 @@ async function post_albums(req, res, next) {
   const options = {
     market: market,
   };
-  spotifyApi
-    .getAlbums(ids, options)
-    .then(
-      function (data) {
-        res.json(data);
-      },
-      function (err) {
-        throw new APIError({
-          message: 'Provide a valid non-empty "ids" array of strings',
-          status: err.status,
-        });
-      }
-    )
-    .catch(function (err) {
-      next(err);
-    });
+  try {
+    spotifyApi
+      .getAlbums(ids, options)
+      .then(
+        function (data) {
+          res.json(data);
+        },
+        function (err) {
+          throw new APIError({
+            message: 'Provide a valid non-empty "ids" array of strings',
+            status: err.status,
+          });
+        }
+      )
+      .catch(function (err) {
+        next(err);
+      });
+  } catch (error) {
+    next(error);
+  }
 }
 
 async function post_albums_id(req, res, next) {
@@ -30,19 +34,23 @@ async function post_albums_id(req, res, next) {
   const options = {
     market: market,
   };
-  spotifyApi
-    .getAlbum(id, options)
-    .then(
-      function (data) {
-        res.json(data);
-      },
-      function (err) {
-        throw new APIError({ message: "Bad request", status: err.status });
-      }
-    )
-    .catch(function (err) {
-      next(err);
-    });
+  try {
+    spotifyApi
+      .getAlbum(id, options)
+      .then(
+        function (data) {
+          res.json(data);
+        },
+        function (err) {
+          throw new APIError({ message: "Bad request", status: err.status });
+        }
+      )
+      .catch(function (err) {
+        next(err);
+      });
+  } catch (error) {
+    next(error);
+  }
 }
 
 async function post_albums_id_tracks(req, res, next) {
@@ -53,56 +61,68 @@ async function post_albums_id_tracks(req, res, next) {
     limit: limit,
     offset: offset,
   };
-  spotifyApi
-    .getAlbumTracks(id, options)
-    .then(
-      function (data) {
-        res.json(data);
-      },
-      function (err) {
-        throw new APIError({ message: "Bad request", status: err.status });
-      }
-    )
-    .catch(function (err) {
-      next(err);
-    });
+  try {
+    spotifyApi
+      .getAlbumTracks(id, options)
+      .then(
+        function (data) {
+          res.json(data);
+        },
+        function (err) {
+          throw new APIError({ message: "Bad request", status: err.status });
+        }
+      )
+      .catch(function (err) {
+        next(err);
+      });
+  } catch (error) {
+    next(error);
+  }
 }
 
 async function post_artists(req, res, next) {
   const { ids } = req.body;
-  spotifyApi
-    .getArtists(ids)
-    .then(
-      function (data) {
-        res.json(data);
-      },
-      function (err) {
-        throw new APIError({
-          message: 'Provide a valid non-empty "ids" array of strings',
-          status: err.status,
-        });
-      }
-    )
-    .catch(function (err) {
-      next(err);
-    });
+  try {
+    spotifyApi
+      .getArtists(ids)
+      .then(
+        function (data) {
+          res.json(data);
+        },
+        function (err) {
+          throw new APIError({
+            message: 'Provide a valid non-empty "ids" array of strings',
+            status: err.status,
+          });
+        }
+      )
+      .catch(function (err) {
+        next(err);
+      });
+  } catch (error) {
+    next(error);
+  }
 }
 
 async function get_artists_id(req, res, next) {
   const { id } = req.params;
-  spotifyApi
-    .getArtist(id)
-    .then(
-      function (data) {
-        res.json(data);
-      },
-      function (err) {
-        throw new APIError({ message: "Bad request", status: err.status });
-      }
-    )
-    .catch(function (err) {
-      next(err);
-    });
+  try {
+    spotifyApi
+      .getArtist(id)
+      .then(
+        function (data) {
+          res.json(data);
+        },
+        function (err) {
+          throw new APIError({ message: "Bad request", status: err.status });
+        }
+      )
+      .catch(function (err) {
+        next(err);
+      });
+  } catch (error) {
+    next(error);
+  }
 }
 
 async function post_artists_id_albums(req, res, next) {
@@ -114,19 +134,23 @@ async function post_artists_id_albums(req, res, next) {
     limit: limit,
     offset: offset,
   };
-  spotifyApi
-    .getArtistAlbums(id, options)
-    .then(
-      function (data) {
-        res.json(data);
-      },
-      function (err) {
-        throw new APIError({ message: "Bad request", status: err.status });
-      }
-    )
-    .catch(function (err) {
-      next(err);
-    });
+  try {
+    spotifyApi
+      .getArtistAlbums(id, options)
+      .then(
+        function (data) {
+          res.json(data);
+        },
+        function (err) {
+          throw new APIError({ message: "Bad request", status: err.status });
+        }
+      )
+      .catch(function (err) {
+        next(err);
+      });
+  } catch (error) {
+    next(error);
+  }
 }
 
 async function post_artists_id_top(req, res, next) {
@@ -135,36 +159,44 @@ async function post_artists_id_top(req, res, next) {
   const options = {
     market: market,
   };
-  spotifyApi
-    .getArtistTopTracks(id, options)
-    .then(
-      function (data) {
-        res.json(data);
-      },
-      function (err) {
-        throw new APIError({ message: "Bad request", status: err.status });
-      }
-    )
-    .catch(function (err) {
-      next(err);
-    });
+  try {
+    spotifyApi
+      .getArtistTopTracks(id, options)
+      .then(
+        function (data) {
+          res.json(data);
+        },
+        function (err) {
+          throw new APIError({ message: "Bad request", status: err.status });
+        }
+      )
+      .catch(function (err) {
+        next(err);
+      });
+  } catch (error) {
+    next(error);
+  }
 }
 
 async function get_artists_id_related(req, res, next) {
   const { id } = req.params;
-  spotifyApi
-    .getArtistRelatedArtists(id)
-    .then(
-      function (data) {
-        res.json(data);
-      },
-      function (err) {
-        throw new APIError({ message: "Bad request", status: err.status });
-      }
-    )
-    .catch(function (err) {
-      next(err);
-    });
+  try {
+    spotifyApi
+      .getArtistRelatedArtists(id)
+      .then(
+        function (data) {
+          res.json(data);
+        },
+        function (err) {
+          throw new APIError({ message: "Bad request", status: err.status });
+        }
+      )
+      .catch(function (err) {
+        next(err);
+      });
+  } catch (error) {
+    next(error);
+  }
 }
 
 async function post_tracks(req, res, next) {
@@ -219,6 +251,33 @@ async function post_tracks_id(req, res, next) {
   }
 }
 
+async function post_search(req, res, next) {
+  const { q, market, limit, offset } = req.body;
+  const options = {
+    market: market,
+    limit: limit,
+    offset: offset,
+    include_external: "audio",
+  };
+  try {
+    spotifyApi
+      .search(q, ["track"], options)
+      .then(
+        function (data) {
+          res.json(data);
+        },
+        function (err) {
+          throw new APIError({ message: "Bad request", status: err.status });
+        }
+      )
+      .catch(function (err) {
+        next(err);
+      });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function post_recommendations(req, res, next) {
   const { limit, market, seed_artists, seed_genres, seed_tracks } = req.body;
   const options = {
@@ -228,35 +287,43 @@ async function post_recommendations(req, res, next) {
     seed_genres: seed_genres,
     seed_tracks: seed_tracks,
   };
-  spotifyApi
-    .getRecommendations(options)
-    .then(
-      function (data) {
-        res.json(data);
-      },
-      function (err) {
-        throw new APIError({ message: "Bad request", status: err.status });
-      }
-    )
-    .catch(function (err) {
-      next(err);
-    });
+  try {
+    spotifyApi
+      .getRecommendations(options)
+      .then(
+        function (data) {
+          res.json(data);
+        },
+        function (err) {
+          throw new APIError({ message: "Bad request", status: err.status });
+        }
+      )
+      .catch(function (err) {
+        next(err);
+      });
+  } catch (error) {
+    next(error);
+  }
 }
 
 async function get_recommendations_genres(req, res, next) {
-  spotifyApi
-    .getAvailableGenreSeeds()
-    .then(
-      function (data) {
-        res.json(data);
-      },
-      function (err) {
-        throw new APIError({ message: "Bad request", status: err.status });
-      }
-    )
-    .catch(function (err) {
-      next(err);
-    });
+  try {
+    spotifyApi
+      .getAvailableGenreSeeds()
+      .then(
+        function (data) {
+          res.json(data);
+        },
+        function (err) {
+          throw new APIError({ message: "Bad request", status: err.status });
+        }
+      )
+      .catch(function (err) {
+        next(err);
+      });
+  } catch (error) {
+    next(error);
+  }
 }
 
 module.exports = {
@@ -277,6 +344,8 @@ module.exports = {
 
     tracks: post_tracks,
     tracksId: post_tracks_id,
+
+    search: post_search,
 
     recommendations: post_recommendations,
   },

@@ -2,11 +2,13 @@ const { APIError } = require("../utils/api-error");
 const userCredentials = require("../database/models/userCredentials");
 
 async function get_get_user(req, res, next) {
-  const user = req.params.user;
+  const { user } = req.params;
   try {
     const record = await userCredentials.findOne({ username: user });
-    if (!record) return res.json({ user: null });
-    const safe = record.getSafe();
+    if (!record)
+      throw new APIError({ message: "Username is unknown", status: 404 });
+
+    const safe = await record.getSafe();
     res.json({ user: safe });
   } catch (error) {
     next(error);
@@ -16,44 +18,42 @@ async function get_get_user(req, res, next) {
 async function post_follow_user(req, res, next) {
   const sessionId = req.session.userId;
   const sessionUser = req.session.user;
-  const user = req.params.user;
+  const { user } = req.params;
   try {
-    const me = await userCredentials.findById(sessionId);
-    if (!me) throw new APIError();
+    if (sessionUser === user)
+      throw new APIError({ message: "Cannot unfollow yourself", status: 400 });
 
-    const record = await userCredentials.findOne({ username: user });
-    if (!record) throw new APIError("Username is unknown");
+    const iExists = await userCredentials.exists({ _id: sessionId });
+    if (!iExists) throw new APIError();
 
-    if (sessionUser.equals(user)) return res.send();
-    if (!me.follows.includes(user)) {
-      me.follows.push(user);
-      await me.save();
-    }
+    const userExists = await userCredentials.exists({ username: user });
+    if (!userExists)
+      throw new APIError({ message: "Username is unknown", status: 404 });
 
-    res.send();
+    await userCredentials.findByIdAndUpdate(sessionId, {
+      $addToSet: { follows: user },
+    });
+    res.status(204).send();
   } catch (error) {
     next(error);
   }
 }
 
 async function post_unfollow_user(req, res, next) {
-  const user = req.params.user;
   const sessionId = req.session.userId;
+  const sessionUser = req.session.user;
+  const { user } = req.params;
   try {
-    const owner = await userCredentials.findById(sessionId);
-    const record = await userCredentials.findOne({ username: user });
-    if (!owner) throw new APIError();
-    if (!record) throw new APIError("Username is unknown");
+    if (sessionUser === user)
+      throw new APIError({ message: "Cannot unfollow yourself", status: 400 });
 
-    if (owner._id.equals(record._id)) throw new APIError();
-    if (owner.follows.includes(user)) {
-      owner.follows = owner.follows.filter(function (item) {
-        return item !== user;
-      });
-      await owner.save();
-    }
+    const iExists = await userCredentials.exists({ _id: sessionId });
+    if (!iExists) throw new APIError();
 
-    res.send();
+    await userCredentials.findByIdAndUpdate(sessionId, {
+      $pull: { follows: user },
+    });
+    res.status(204).send();
   } catch (error) {
     next(error);
   }
@@ -61,20 +61,22 @@ async function post_unfollow_user(req, res, next) {
 
 async function put_update(req, res, next) {
   const sessionId = req.session.userId;
-  const { firstName, lastName, genres } = req.params;
+  const { firstName, lastName, genres, bio } = req.body;
 
   const update = {};
   if (firstName) update.firstName = firstName;
   if (lastName) update.lastName = lastName;
   if (genres) update.genres = lastName;
+  if (bio) update.bio = bio;
 
   try {
     const owner = await userCredentials.findByIdAndUpdate(sessionId, update, {
       new: true,
+      runValidators: true,
     });
     if (!owner) throw new APIError();
 
-    res.send();
+    res.status(204).send();
   } catch (error) {
     next(error);
   }

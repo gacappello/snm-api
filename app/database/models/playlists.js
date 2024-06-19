@@ -51,6 +51,7 @@ const playlistsSchema = new mongoose.Schema(
 
 playlistsSchema.pre("save", async function (next) {
   this.updatedAt = Date.now();
+  next();
 });
 
 module.exports = mongoose.model("Playlists", playlistsSchema);

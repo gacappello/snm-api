@@ -1,7 +1,15 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import vuetify from "vite-plugin-vuetify";
+import dotenv from "dotenv";
 
-// https://vitejs.dev/config/
+dotenv.config();
+
+const port = parseInt(process.env.VITE_PORT);
+
 export default defineConfig({
-  plugins: [vue()],
-})
+  plugins: [vue(), vuetify({ autoImport: true })],
+  server: {
+    port: port,
+  },
+});

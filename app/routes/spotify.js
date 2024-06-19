@@ -4,20 +4,20 @@ const controller = require("../controller/spotify");
 const router = express.Router();
 
 // API Calls
-router.get("/albums", controller.get.albums);
-router.get("/albums/:id", controller.get.albumsId);
-router.get("/albums/:id/tracks", controller.get.albumsIdTracks);
+router.post("/albums", controller.post.albums);
+router.post("/albums/:id", controller.post.albumsId);
+router.post("/albums/:id/tracks", controller.post.albumsIdTracks);
 
-router.get("/artists", controller.get.artists);
+router.post("/artists", controller.post.artists);
 router.get("/artists/:id", controller.get.artistsId);
-router.get("/artists/:id/albums", controller.get.artistsIdAlbums);
-router.get("/artists/:id/top-tracks", controller.get.artistsIdTopTracks);
+router.post("/artists/:id/albums", controller.post.artistsIdAlbums);
+router.post("/artists/:id/top-tracks", controller.post.artistsIdTopTracks);
 router.get("/artists/:id/related-artists", controller.get.artistsIdRelated);
 
-router.get("/tracks", controller.get.tracks);
-router.get("/tracks/:id", controller.get.tracksId);
+router.post("/tracks", controller.post.tracks);
+router.post("/tracks/:id", controller.post.tracksId);
 
-router.get("/recommendations", controller.get.recommendations);
+router.post("/recommendations", controller.post.recommendations);
 router.get(
   "/recommendations/available-genre-seeds",
   controller.get.recommendationsGenres

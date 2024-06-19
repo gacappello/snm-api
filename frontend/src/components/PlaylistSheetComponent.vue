@@ -1,0 +1,92 @@
+<template>
+  <v-hover v-slot="{ isHovering, props }">
+    <v-card
+      height="350px"
+      min-width="200px"
+      max-width="350px"
+      v-ripple
+      hover
+      :class="{ 'on-hover': isHovering }"
+      class="rounded-lg"
+      v-bind="props"
+      :href="'/playlists/' + _id"
+    >
+      <v-card-title class="font-weight-black text-h4 gradient">
+        {{ name.charAt(0).toUpperCase() + name.slice(1) }}
+      </v-card-title>
+      <template v-slot:image>
+        <v-img :src="src" aspect-ratio="1" height="350px" cover>
+          <template v-slot:placeholder>
+            <div class="d-flex align-center justify-center fill-height">
+              <v-progress-circular
+                color="grey-lighten-4"
+                indeterminate
+              ></v-progress-circular>
+            </div>
+          </template>
+        </v-img>
+      </template>
+      <v-expand-transition>
+        <div
+          v-if="isHovering"
+          class="transition-fast-in-fast-out v-card--reveal"
+        >
+          <v-table density="comfortable">
+            <tbody>
+              <tr align="right">
+                <th>Songs:</th>
+                <td>{{ songs.length }}</td>
+              </tr>
+              <tr align="right">
+                <th>Date:</th>
+                <td>{{ createdAt.substring(0, 10) }}</td>
+              </tr>
+              <tr align="right">
+                <th>Access:</th>
+                <td>{{ access.charAt(0).toUpperCase() + access.slice(1) }}</td>
+              </tr>
+            </tbody>
+          </v-table>
+        </div>
+      </v-expand-transition>
+    </v-card>
+  </v-hover>
+</template>
+<script>
+export default {
+  props: {
+    _id: String,
+    name: String,
+    access: String,
+    createdAt: String,
+    src: String,
+    songs: Array,
+  },
+};
+</script>
+<style>
+.gradient {
+  background: linear-gradient(
+    to bottom,
+    rgba(var(--v-theme-secondary), 0.8),
+    transparent
+  );
+}
+
+.gradient-big {
+  height: 400px;
+  background: linear-gradient(
+    to bottom,
+    rgba(var(--v-theme-secondary), 0.8),
+    transparent
+  );
+}
+
+.v-card--reveal {
+  bottom: 0;
+  right: 0;
+  left: 0;
+  opacity: 0.95;
+  position: absolute;
+}
+</style>

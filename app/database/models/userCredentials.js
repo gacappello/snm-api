@@ -55,6 +55,17 @@ const userCredentialsSchema = new mongoose.Schema(
         message: "Invalid username format!",
       },
     },
+    bio: {
+      type: String,
+      min: [1, "Bio must be at least 5 characters!"],
+      max: [30, "Bio must be at maximum 30 characters!"],
+      validate: {
+        validator: function (value) {
+          return validator.isAlphanumeric(value);
+        },
+        message: "Invalid bio format!",
+      },
+    },
     password: {
       type: String,
       required: [true, "A password is required!"],
@@ -70,15 +81,18 @@ const userCredentialsSchema = new mongoose.Schema(
     updatedAt: {
       type: Date,
     },
+    favourites: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Playlists" }],
+    },
     genres: {
       type: [String],
     },
-    followers:  {
-      type: [String]
+    followers: {
+      type: [String],
     },
     follows: {
-      type: [String]
-    }
+      type: [String],
+    },
   },
   {
     versionKey: false,
@@ -86,6 +100,7 @@ const userCredentialsSchema = new mongoose.Schema(
 );
 
 userCredentialsSchema.pre("save", async function (next) {
+  this.updatedAt = Date.now();
   if (!this.isModified("password")) {
     return next();
   }
@@ -93,7 +108,6 @@ userCredentialsSchema.pre("save", async function (next) {
   this.password += pepper;
   const salt = await bcrypt.genSalt(16);
   this.password = await bcrypt.hash(this.password, salt);
-  this.updatedAt = Date.now();
   next();
 });
 
@@ -104,12 +118,13 @@ userCredentialsSchema.methods.compareHash = async function (data) {
 };
 
 userCredentialsSchema.methods.getSafe = function () {
-  const obj = this.toObject();
-  delete obj.password;
-  delete obj.updatedAt;
-  delete obj.email;
-  console.log(obj)
-  return obj;
+  this.password = undefined;
+  this.updatedAt = undefined;
+  this.email = undefined;
+  return this;
 };
+
+userCredentialsSchema.set("toJSON", { virtuals: true });
+userCredentialsSchema.set("toObject", { virtuals: true });
 
 module.exports = mongoose.model("UserCredentials", userCredentialsSchema);

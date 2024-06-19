@@ -3,7 +3,8 @@ const { APIError } = require("../utils/api-error");
 const userCredentials = require("../database/models/userCredentials");
 
 async function post_register(req, res, next) {
-  const { username, password, email, birth, firstName, lastName } = req.body;
+  const { username, password, email, birth, firstName, lastName, genres } =
+    req.body;
   try {
     if (req.session.user) return res.status(204).send();
 
@@ -15,9 +16,12 @@ async function post_register(req, res, next) {
     if (!lastName) throw new APIError({ message: "Provide a last name" });
 
     let record = await userCredentials.findOne({ username: username });
-    if (record) throw new APIError({ message: "Username already exist" });
+    if (record)
+      throw new APIError({ message: "Username already exist", status: 403 });
+
     record = await userCredentials.findOne({ email: email });
-    if (record) throw new APIError({ message: "Email already exits" });
+    if (record)
+      throw new APIError({ message: "Email already exits", status: 403 });
 
     const user = {
       username: username,
@@ -26,6 +30,7 @@ async function post_register(req, res, next) {
       firstName: firstName,
       lastName: lastName,
       birthDate: birth,
+      genres: genres,
     };
 
     const doc = new userCredentials(user);
@@ -57,7 +62,10 @@ async function post_login(req, res, next) {
 
     req.session.userId = record._id;
     req.session.user = record.username;
-    res.status(204).send();
+    res
+      .cookie("user", record.username, { maxAge: 1000 * 60 * 60 * 24 * 14 })
+      .status(204)
+      .send();
   } catch (error) {
     next(error);
   }

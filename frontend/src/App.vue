@@ -1,19 +1,28 @@
 <template>
-  <div>
-    <LoginPage />
-  </div>
+  <v-app>
+    <div class="singer"></div>
+    <NavbarComponent />
+    <v-main style="z-index: 1">
+      <router-view> </router-view>
+    </v-main>
+    <FooterComponent />
+  </v-app>
 </template>
 
 <script>
-import LoginPage from "./components/LoginPage.vue";
+import NavbarComponent from "./components/NavbarComponent.vue";
+import FooterComponent from "./components/FooterComponent.vue";
 
 export default {
+  name: "App",
   components: {
-    LoginPage,
+    NavbarComponent,
+    FooterComponent,
+  },
+  data() {
+    return {};
   },
 };
 </script>
 
-<style>
-/* Add your CSS styles here */
-</style>
+<style></style>

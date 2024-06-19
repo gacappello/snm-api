@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser');
 const session = require("express-session");
 const cors = require("cors");
 
@@ -23,8 +24,7 @@ const app = express();
 const webPort = env.WEB_API_PORT;
 const sessionSecret = env.SESSION_SECRET;
 
-const vuePort = env.VUE_PORT;
-const vueHost = env.VUE_HOST;
+const vueLocation = env.VUE_LOCATION;
 
 const store = new session.MemoryStore();
 
@@ -54,10 +54,11 @@ process.on("SIGTERM", freeWebAPI);
 process.on("SIGINT", freeWebAPI);
 
 app.use(bodyParser.json());
+app.use(cookieParser());
 app.use(
   session({
     secret: sessionSecret,
-    cookie: { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 14 },
+    cookie: { httpOnly: false, maxAge: 1000 * 60 * 60 * 24 * 14 },
     saveUninitialized: false,
     store: store,
   })
@@ -70,7 +71,7 @@ app.use(function (req, res, next) {
 
 app.use(
   cors({
-    origin: `http://${vueHost}:${vuePort}`,
+    origin: vueLocation,
     credentials: true,
   })
 );
@@ -79,7 +80,7 @@ app.use(
 app.use("/", authRoutes);
 
 // From here all routes need auth
-// app.use(requireAuth);
+app.use(requireAuth);
 
 // Other routes
 app.use("/playlists", playlistsRoutes);

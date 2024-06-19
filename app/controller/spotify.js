@@ -1,7 +1,7 @@
 const { APIError } = require("../utils/api-error");
 const spotifyApi = require("../spotify");
 
-async function get_albums(req, res, next) {
+async function post_albums(req, res, next) {
   const { ids, market } = req.body;
   const options = {
     market: market,
@@ -24,7 +24,7 @@ async function get_albums(req, res, next) {
     });
 }
 
-async function get_albums_id(req, res, next) {
+async function post_albums_id(req, res, next) {
   const { id } = req.params;
   const { market } = req.body;
   const options = {
@@ -45,7 +45,7 @@ async function get_albums_id(req, res, next) {
     });
 }
 
-async function get_albums_id_tracks(req, res, next) {
+async function post_albums_id_tracks(req, res, next) {
   const { id } = req.params;
   const { market, limit, offset } = req.body;
   const options = {
@@ -68,7 +68,7 @@ async function get_albums_id_tracks(req, res, next) {
     });
 }
 
-async function get_artists(req, res, next) {
+async function post_artists(req, res, next) {
   const { ids } = req.body;
   spotifyApi
     .getArtists(ids)
@@ -105,7 +105,7 @@ async function get_artists_id(req, res, next) {
     });
 }
 
-async function get_artists_id_albums(req, res, next) {
+async function post_artists_id_albums(req, res, next) {
   const { id } = req.params;
   const { include_groups, market, limit, offset } = req.body;
   const options = {
@@ -129,7 +129,7 @@ async function get_artists_id_albums(req, res, next) {
     });
 }
 
-async function get_artists_id_top(req, res, next) {
+async function post_artists_id_top(req, res, next) {
   const { id } = req.params;
   const { market } = req.body;
   const options = {
@@ -167,51 +167,59 @@ async function get_artists_id_related(req, res, next) {
     });
 }
 
-async function get_tracks(req, res, next) {
+async function post_tracks(req, res, next) {
   const { ids, market } = req.body;
   const options = {
     market: market,
   };
-  spotifyApi
-    .getTracks(ids, options)
-    .then(
-      function (data) {
-        res.json(data);
-      },
-      function (err) {
-        throw new APIError({
-          message: 'Provide a valid non-empty "ids" array of strings',
-          status: err.status,
-        });
-      }
-    )
-    .catch(function (err) {
-      next(err);
-    });
+  try {
+    spotifyApi
+      .getTracks(ids, options)
+      .then(
+        function (data) {
+          res.json(data);
+        },
+        function (err) {
+          throw new APIError({
+            message: 'Provide a valid non-empty "ids" array of strings',
+            status: err.status,
+          });
+        }
+      )
+      .catch(function (err) {
+        next(err);
+      });
+  } catch (error) {
+    next(error);
+  }
 }
 
-async function get_tracks_id(req, res, next) {
+async function post_tracks_id(req, res, next) {
   const { id } = req.params;
   const { market } = req.body;
   const options = {
     market: market,
   };
-  spotifyApi
-    .getTrack(id, options)
-    .then(
-      function (data) {
-        res.json(data);
-      },
-      function (err) {
-        throw new APIError({ message: "Bad request", status: err.status });
-      }
-    )
-    .catch(function (err) {
-      next(err);
-    });
+  try {
+    spotifyApi
+      .getTrack(id, options)
+      .then(
+        function (data) {
+          res.json(data);
+        },
+        function (err) {
+          throw new APIError({ message: "Bad request", status: err.status });
+        }
+      )
+      .catch(function (err) {
+        next(err);
+      });
+  } catch (error) {
+    next(error);
+  }
 }
 
-async function get_recommendations(req, res, next) {
+async function post_recommendations(req, res, next) {
   const { limit, market, seed_artists, seed_genres, seed_tracks } = req.body;
   const options = {
     limit: limit,
@@ -253,20 +261,23 @@ async function get_recommendations_genres(req, res, next) {
 
 module.exports = {
   get: {
-    albums: get_albums,
-    albumsId: get_albums_id,
-    albumsIdTracks: get_albums_id_tracks,
-
-    artists: get_artists,
     artistsId: get_artists_id,
-    artistsIdAlbums: get_artists_id_albums,
-    artistsIdTopTracks: get_artists_id_top,
     artistsIdRelated: get_artists_id_related,
 
-    tracks: get_tracks,
-    tracksId: get_tracks_id,
-
-    recommendations: get_recommendations,
     recommendationsGenres: get_recommendations_genres,
+  },
+  post: {
+    albums: post_albums,
+    albumsId: post_albums_id,
+    albumsIdTracks: post_albums_id_tracks,
+
+    artists: post_artists,
+    artistsIdAlbums: post_artists_id_albums,
+    artistsIdTopTracks: post_artists_id_top,
+
+    tracks: post_tracks,
+    tracksId: post_tracks_id,
+
+    recommendations: post_recommendations,
   },
 };

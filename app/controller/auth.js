@@ -8,12 +8,18 @@ async function post_register(req, res, next) {
   try {
     if (req.session.user) return res.status(204).send();
 
-    if (!username) throw new APIError({ message: "Provide an uername" });
-    if (!password) throw new APIError({ message: "Provide a password" });
-    if (!email) throw new APIError({ message: "Provide an email" });
-    if (!birth) throw new APIError({ message: "Provide a birth date" });
-    if (!firstName) throw new APIError({ message: "Provide a first name" });
-    if (!lastName) throw new APIError({ message: "Provide a last name" });
+    if (!username)
+      throw new APIError({ message: "Provide an uername", status: 400 });
+    if (!password)
+      throw new APIError({ message: "Provide a password", status: 400 });
+    if (!email)
+      throw new APIError({ message: "Provide an email", status: 400 });
+    if (!birth)
+      throw new APIError({ message: "Provide a birth date", status: 400 });
+    if (!firstName)
+      throw new APIError({ message: "Provide a first name", status: 400 });
+    if (!lastName)
+      throw new APIError({ message: "Provide a last name", status: 400 });
 
     let record = await userCredentials.findOne({ username: username });
     if (record)
@@ -49,8 +55,13 @@ async function post_login(req, res, next) {
       return res.status(204).send();
     }
 
-    if (!cred) throw new APIError({ message: "Provide an auth credential" });
-    if (!password) throw new APIError({ message: "Provide a pasword" });
+    if (!cred)
+      throw new APIError({
+        message: "Provide an auth credential",
+        status: 400,
+      });
+    if (!password)
+      throw new APIError({ message: "Provide a pasword", status: 400 });
 
     let record;
     if (validator.isEmail(cred))
@@ -62,10 +73,7 @@ async function post_login(req, res, next) {
 
     req.session.userId = record._id;
     req.session.user = record.username;
-    res
-      .cookie("user", record.username, { maxAge: 1000 * 60 * 60 * 24 * 14 })
-      .status(204)
-      .send();
+    res.status(204).send();
   } catch (error) {
     next(error);
   }

@@ -9,7 +9,7 @@
       :class="{ 'on-hover': isHovering }"
       class="rounded-lg"
       v-bind="props"
-      :href="'/playlists/' + _id"
+      @click="$router.push('/playlists/' + _id)"
     >
       <v-card-title class="font-weight-black text-h4 gradient">
         {{ name.charAt(0).toUpperCase() + name.slice(1) }}

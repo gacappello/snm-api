@@ -44,9 +44,7 @@
               <div>
                 <v-btn v-if="loading" icon="" :loading="loading"></v-btn>
                 <v-btn
-                  v-else-if="
-                    !(requestedUsernameData.username === loggedUsername)
-                  "
+                  v-else-if="!(requestedUsernameData.username === me.username)"
                   prepend-icon="fa-solid fa-check"
                   :text="
                     requestedUsernameData.following ? 'Unfollow' : 'Follow'
@@ -235,7 +233,7 @@ export default {
 
   data() {
     return {
-      loggedUsername: this.$cookies.get("user"),
+      me: null,
       loading: true,
       requestedUsernameData: {
         username: this.$route.params.username,
@@ -257,6 +255,10 @@ export default {
   },
 
   methods: {
+    async sendGetMe() {
+      return await api.getMe();
+    },
+
     async sendGetUserProfileRequest(username) {
       return await api.getUserProfile(username);
     },
@@ -282,15 +284,23 @@ export default {
     },
   },
 
-  async mounted() {
+  async beforeMount() {
     this.loading = true;
-    const usernameResponse = await this.sendGetUserProfileRequest(
-      this.$route.params.username
-    );
-    if (usernameResponse.data.error || !usernameResponse.data.user) {
-      this.$router.push("/home").then(() => {
-        this.$router.go(0);
-      });
+    const meResponse = await this.sendGetMe();
+    if (!meResponse.data.error) {
+      this.me = meResponse.data.user;
+    }
+
+    if (this.me.username === this.requestedUsernameData.username) {
+      this.requestedUsernameData.data = this.me;
+    } else {
+      const usernameResponse = await this.sendGetUserProfileRequest(
+        this.$route.params.username
+      );
+      if (usernameResponse.data.error || !usernameResponse.data.user) {
+        this.$router.push("/home");
+      }
+      this.requestedUsernameData.data = usernameResponse.data.user;
     }
 
     const playlistsResponse = await this.sendGetPlaylistsOfUserRequest(
@@ -299,8 +309,6 @@ export default {
     if (playlistsResponse.data.error) {
       // SNACKBAR
     }
-
-    console.log(playlistsResponse.data);
 
     // for (
     //   let i = 0;
@@ -319,7 +327,6 @@ export default {
     //   }
     // }
 
-    this.requestedUsernameData.data = usernameResponse.data.user;
     this.requestedUsernameData.playlists = playlistsResponse.data.playlists;
     this.loading = false;
   },

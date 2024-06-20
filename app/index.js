@@ -1,10 +1,13 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser');
+const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const cors = require("cors");
 
+const swaggerUi = require("swagger-ui-express");
+
 const { INFO, ERROR, APIError } = require("./utils/api-error");
+const swaggerSpec = require("./utils/swagger");
 
 const requireAuth = require("./middleware/auth");
 const errorHandler = require("./middleware/error");
@@ -75,6 +78,11 @@ app.use(
     credentials: true,
   })
 );
+
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get("/docs.json", (req, res) => {
+  res.json(swaggerSpec);
+});
 
 // Auth routes
 app.use("/", authRoutes);

@@ -8,6 +8,14 @@ async function getUserProfile(username) {
   }
 }
 
+async function getMe() {
+  try {
+    return await instance.get("/users/get");
+  } catch (error) {
+    return error.response;
+  }
+}
+
 async function followUser(username) {
   try {
     return await instance.post("/users/follow/" + username);
@@ -258,6 +266,7 @@ async function getRecommendationsGenres() {
 
 export default {
   getUserProfile: getUserProfile,
+  getMe: getMe,
   followUser: followUser,
   unfollowUser: unfollowUser,
   updateUser: updateUser,
@@ -291,6 +300,8 @@ export default {
 
   getTracks: getTracks,
   getTrack: getTrack,
+
+  makeSearch: makeSearch,
 
   getRecommendations: getRecommendations,
   getRecommendationsGenres: getRecommendationsGenres,

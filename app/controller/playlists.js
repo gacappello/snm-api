@@ -110,7 +110,7 @@ async function get_get_id(req, res, next) {
     if (record.access === "private")
       throw new APIError({
         message: "You are unauthorized for this playlist",
-        status: 401,
+        status: 403,
       });
 
     if (record.access === "followers") {

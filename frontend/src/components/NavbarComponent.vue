@@ -13,11 +13,7 @@
       ></v-app-bar-nav-icon>
       <v-toolbar-title
         class="text-grey-lighten-1 cursor-pointer"
-        @click="
-          $router.push('/home').then(() => {
-            this.$router.go(0);
-          })
-        "
+        @click="$router.push('/home')"
       >
         <span class="font-weight-bold">SNM </span>
         <span class="font-italic">
@@ -29,11 +25,7 @@
       <v-btn
         color="grey"
         append-icon="fa-solid fa-right-to-bracket"
-        @click="
-          $router.push('/login').then(() => {
-            this.$router.go(0);
-          })
-        "
+        @click="$router.push('/login')"
         v-if="!isAuth"
         class="hidden-xs"
       >
@@ -42,11 +34,7 @@
       <v-btn
         color="grey"
         append-icon="fa-solid fa-user"
-        @click="
-          $router.push('/profile/' + loggedUsername).then(() => {
-            this.$router.go(0);
-          })
-        "
+        @click="$router.push('/profile/' + me.username)"
         v-if="isAuth"
         class="hidden-xs"
       >
@@ -68,11 +56,7 @@
           prepend-icon="fa-solid fa-user"
           title="Profile"
           value="profile"
-          @click="
-            $router.push('/profile/' + loggedUsername).then(() => {
-              this.$router.go(0);
-            })
-          "
+          @click="$router.push('/profile/' + me.username)"
           v-if="isAuth"
         >
         </v-list-item>
@@ -81,22 +65,14 @@
           prepend-icon="fa-solid fa-home"
           title="Home"
           value="home"
-          @click="
-            $router.push('/home').then(() => {
-              this.$router.go(0);
-            })
-          "
+          @click="$router.push('/home')"
         ></v-list-item>
         <v-list-item
           density="comfortable"
           prepend-icon="fa-solid fa-music"
           title="Playlists"
           value="playlists"
-          @click="
-            $router.push('/playlists').then(() => {
-              this.$router.go(0);
-            })
-          "
+          @click="$router.push('/playlists')"
         ></v-list-item>
         <v-list-item
           density="comfortable"
@@ -104,11 +80,7 @@
           title="Login"
           value="login"
           class="hidden-sm-and-up"
-          @click="
-            $router.push('/login').then(() => {
-              this.$router.go(0);
-            })
-          "
+          @click="$router.push('/login')"
           v-if="!isAuth"
         ></v-list-item>
         <v-list-item
@@ -124,17 +96,32 @@
   </nav>
 </template>
 <script>
+import api from "../api";
 import auth from "../auth";
 
 export default {
   data() {
     return {
-      loggedUsername: this.$cookies.get("user"),
+      me: null,
       isAuth: auth.isAuthenticated(),
       sideMenu: false,
     };
   },
+
+  async beforeMount() {
+    if (this.isAuth) {
+      const me = await this.sendGetMeRequest();
+      if (!me.data.error) {
+        this.me = me.data.user;
+      }
+    }
+  },
+
   methods: {
+    async sendGetMeRequest() {
+      return await api.getMe();
+    },
+
     logoutPressed() {
       auth.makeLogout();
       this.$router.push("/login").then(() => {

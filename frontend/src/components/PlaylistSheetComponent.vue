@@ -1,19 +1,22 @@
 <template>
   <v-hover v-slot="{ isHovering, props }">
     <v-card
-      height="350px"
+      v-if="!loading"
+      min-height="350px"
+      max-height="350px"
       min-width="200px"
       max-width="350px"
       v-ripple
       hover
-      :class="{ 'on-hover': isHovering }"
       class="rounded-lg"
       v-bind="props"
       @click="$router.push('/playlists/' + _id)"
     >
-      <v-card-title class="font-weight-black text-h4 gradient">
-        {{ name.charAt(0).toUpperCase() + name.slice(1) }}
-      </v-card-title>
+      <template v-slot:title>
+        <div class="font-weight-black text-h4 gradient text-truncate pa-4">
+          {{ name.charAt(0).toUpperCase() + name.slice(1) }}
+        </div>
+      </template>
       <template v-slot:image>
         <v-img
           :src="src"
@@ -56,6 +59,17 @@
         </div>
       </v-expand-transition>
     </v-card>
+    <v-skeleton-loader
+      v-else
+      min-height="350px"
+      max-height="350px"
+      min-width="200px"
+      max-width="350px"
+      type="card, text@6"
+      v-ripple
+      class="rounded-lg"
+    >
+    </v-skeleton-loader>
   </v-hover>
 </template>
 <script>
@@ -67,6 +81,10 @@ export default {
     createdAt: String,
     src: String,
     songs: Array,
+    loading: {
+      type: Boolean,
+      default: false,
+    },
   },
 };
 </script>
@@ -94,5 +112,9 @@ export default {
   left: 0;
   opacity: 0.95;
   position: absolute;
+}
+
+.v-card-item {
+  padding: 0px;
 }
 </style>

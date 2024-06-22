@@ -1,12 +1,9 @@
 <template>
-  <v-container fluid>
-    <div class="d-flex justify-center mt-12">
-      <v-sheet class="border" color="ternary" rounded>
-        <v-card
-          class="border pt-12 px-lg-12 pb-8"
-          :width="$vuetify.display.mdAndUp ? '33vw' : '66vw'"
-        >
-          <div>
+  <v-container fluid class="mt-lg-12">
+    <v-row class="justify-center">
+      <v-col cols="12" sm="10" md="6" lg="5" xl="4">
+        <v-sheet class="border" color="ternary" rounded>
+          <v-card class="pt-12 px-lg-12 pb-8">
             <v-card-title> Login </v-card-title>
             <v-card-subtitle> Login to SNM</v-card-subtitle>
             <v-card-item>
@@ -67,10 +64,10 @@
                 </v-btn>
               </template>
             </v-snackbar>
-          </div>
-        </v-card>
-      </v-sheet>
-    </div>
+          </v-card>
+        </v-sheet>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 <script>

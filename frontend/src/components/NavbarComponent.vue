@@ -34,7 +34,11 @@
       <v-btn
         color="grey"
         append-icon="fa-solid fa-user"
-        @click="$router.push('/profile/' + me.username)"
+        @click="
+          $router.push('/profile/' + me.username).then(() => {
+            this.$router.go(0);
+          })
+        "
         v-if="isAuth"
         class="hidden-xs"
       >
@@ -56,7 +60,11 @@
           prepend-icon="fa-solid fa-user"
           title="Profile"
           value="profile"
-          @click="$router.push('/profile/' + me.username)"
+          @click="
+            $router.push('/profile/' + me.username).then(() => {
+              this.$router.go(0);
+            })
+          "
           v-if="isAuth"
         >
         </v-list-item>
@@ -95,6 +103,7 @@
     ></v-navigation-drawer>
   </nav>
 </template>
+
 <script>
 import api from "../api";
 import auth from "../auth";
@@ -131,4 +140,5 @@ export default {
   },
 };
 </script>
+
 <style></style>

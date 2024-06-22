@@ -30,9 +30,9 @@ async function post_register(req, res, next) {
       throw new APIError({ message: "Email already exits", status: 403 });
 
     const user = {
-      username: username,
-      password: password,
-      email: email,
+      username: username.toLowerCase(),
+      password: password.toLowerCase(),
+      email: email.toLowerCase(),
       firstName: firstName,
       lastName: lastName,
       birthDate: birth,
@@ -64,9 +64,10 @@ async function post_login(req, res, next) {
       throw new APIError({ message: "Provide a pasword", status: 400 });
 
     let record;
-    if (validator.isEmail(cred))
-      record = await userCredentials.findOne({ email: cred });
-    else record = await userCredentials.findOne({ username: cred });
+    if (validator.isEmail(cred.toLowerCase()))
+      record = await userCredentials.findOne({ email: cred.toLowerCase() });
+    else
+      record = await userCredentials.findOne({ username: cred.toLowerCase() });
     if (!record || !(await record.compareHash(password))) {
       throw new APIError({ message: "Bad Credentials", status: 401 });
     }

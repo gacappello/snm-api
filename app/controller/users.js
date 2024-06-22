@@ -2,13 +2,14 @@ const { APIError } = require("../utils/api-error");
 const userCredentials = require("../database/models/userCredentials");
 
 async function get_get_user(req, res, next) {
+  const sessionUser = req.session.user;
   const { user } = req.params;
   try {
     const record = await userCredentials.findOne({ username: user });
     if (!record)
       throw new APIError({ message: "Username is unknown", status: 404 });
 
-    const safe = await record.getSafe();
+    const safe = await record.getSafe(sessionUser);
     res.json({ user: safe });
   } catch (error) {
     next(error);
@@ -16,12 +17,13 @@ async function get_get_user(req, res, next) {
 }
 
 async function get_get_me(req, res, next) {
+  const sessionUser = req.session.user;
   const sessionId = req.session.userId;
   try {
     const record = await userCredentials.findById(sessionId);
     if (!record) throw new APIError();
 
-    const safe = await record.getSafe();
+    const safe = await record.getSafe(sessionUser);
     res.json({ user: safe });
   } catch (error) {
     next(error);
@@ -46,6 +48,12 @@ async function post_follow_user(req, res, next) {
     await userCredentials.findByIdAndUpdate(sessionId, {
       $addToSet: { follows: user },
     });
+    await userCredentials.findOneAndUpdate(
+      { username: user },
+      {
+        $addToSet: { followers: sessionUser },
+      }
+    );
     res.status(204).send();
   } catch (error) {
     next(error);
@@ -66,6 +74,12 @@ async function post_unfollow_user(req, res, next) {
     await userCredentials.findByIdAndUpdate(sessionId, {
       $pull: { follows: user },
     });
+    await userCredentials.findOneAndUpdate(
+      { username: user },
+      {
+        $pull: { followers: sessionUser },
+      }
+    );
     res.status(204).send();
   } catch (error) {
     next(error);
@@ -74,12 +88,14 @@ async function post_unfollow_user(req, res, next) {
 
 async function put_update(req, res, next) {
   const sessionId = req.session.userId;
-  const { firstName, lastName, genres, bio } = req.body;
+  const { firstName, lastName, genres, bio, password, email } = req.body;
 
   const update = {};
   if (firstName) update.firstName = firstName;
   if (lastName) update.lastName = lastName;
-  if (genres) update.genres = lastName;
+  if (genres) update.genres = genres;
+  if (email) update.email = email;
+  if (password) update.password = password;
   if (bio) update.bio = bio;
 
   try {

@@ -57,14 +57,14 @@ const userCredentialsSchema = new mongoose.Schema(
     },
     bio: {
       type: String,
-      min: [1, "Bio must be at least 5 characters!"],
-      max: [30, "Bio must be at maximum 30 characters!"],
+      max: [30, "Bio must be at maximum 40 characters!"],
       validate: {
         validator: function (value) {
           return validator.isAlphanumeric(value);
         },
         message: "Invalid bio format!",
       },
+      default: "",
     },
     password: {
       type: String,
@@ -117,10 +117,12 @@ userCredentialsSchema.methods.compareHash = async function (data) {
   return await bcrypt.compare(pw, hash);
 };
 
-userCredentialsSchema.methods.getSafe = function () {
+userCredentialsSchema.methods.getSafe = function (user) {
   this.password = undefined;
   this.updatedAt = undefined;
-  this.email = undefined;
+  if (this.username !== user) {
+    this.email = undefined;
+  }
   return this;
 };
 

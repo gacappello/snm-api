@@ -3,7 +3,7 @@
     <v-row class="justify-center">
       <v-col cols="12" sm="10" md="6" lg="5" xl="4">
         <v-sheet class="border" color="ternary" rounded>
-          <v-card class="pt-12 px-lg-12 pb-8">
+          <v-card class="pt-12 px-4 px-lg-12 pb-8">
             <v-card-title> Login </v-card-title>
             <v-card-subtitle> Login to SNM</v-card-subtitle>
             <v-card-item>

@@ -6,6 +6,8 @@ import Login from "./views/Login.vue";
 import Home from "./views/Home.vue";
 import Register from "./views/Register.vue";
 import Profile from "./views/Profile.vue";
+import Playlist from "./views/Playlist.vue";
+import Artist from "./views/Artist.vue";
 
 const routes = [
   {
@@ -30,6 +32,18 @@ const routes = [
     path: "/profile/:username",
     name: "profile",
     component: Profile,
+    meta: { requireAuth: true },
+  },
+  {
+    path: "/playlist/:id",
+    name: "playlist",
+    component: Playlist,
+    meta: { requireAuth: true },
+  },
+  {
+    path: "/artist/:id",
+    name: "artist",
+    component: Artist,
     meta: { requireAuth: true },
   },
   {

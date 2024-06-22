@@ -33,6 +33,13 @@
       </v-btn>
       <v-btn
         color="grey"
+        icon="fa-solid fa-search"
+        v-if="isAuth"
+        @click="logoutPressed()"
+      >
+      </v-btn>
+      <v-btn
+        color="grey"
         append-icon="fa-solid fa-user"
         @click="
           $router.push('/profile/' + me.username).then(() => {

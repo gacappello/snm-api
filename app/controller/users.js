@@ -16,6 +16,20 @@ async function get_get_user(req, res, next) {
   }
 }
 
+async function get_users(req, res, next) {
+  const { user } = req.query;
+  try {
+    const records = await userCredentials.find({
+      username: { $regex: "^" + user },
+    });
+    const response = [];
+    if (records) for (let r of records) if (r) response.push(r.username);
+    res.json({ users: response });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function get_get_me(req, res, next) {
   const sessionUser = req.session.user;
   const sessionId = req.session.userId;
@@ -114,6 +128,7 @@ async function put_update(req, res, next) {
 module.exports = {
   get: {
     getUser: get_get_user,
+    users: get_users,
     getMe: get_get_me,
   },
   post: {

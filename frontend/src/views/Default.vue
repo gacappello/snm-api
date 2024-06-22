@@ -13,7 +13,7 @@
         <h2>We haven't found what you want!</h2>
       </v-col>
       <v-col cols="12" class="text-center text-h6">
-        <h3>where did you want to go?</h3>
+        <h3>Where did you want to go?</h3>
       </v-col>
     </v-row>
     <v-row dense class="mt-12 pa-12">

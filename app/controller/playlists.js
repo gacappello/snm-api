@@ -6,6 +6,7 @@ const { APIError } = require("../utils/api-error");
 async function get_get(req, res, next) {
   const sessionId = req.session.userId;
   const sessionUser = req.session.user;
+  const { name } = req.query;
   try {
     const me = await userCredentials.findById(sessionId);
     if (!me) throw new APIError();
@@ -16,14 +17,20 @@ async function get_get(req, res, next) {
       othersPlaylists: [],
     };
 
-    const myPlaylists = await playlists.find({ user: sessionUser });
+    const myPlaylists = await playlists.find({
+      user: sessionUser,
+      name: { $regex: "^" + name },
+    });
     for (pl of myPlaylists) {
       all.myPlaylists.push(pl);
     }
 
-    for (follow of me.follows) {
+    for (let follow of me.follows) {
       const record = await playlists
-        .find({ user: follow })
+        .find({
+          user: follow,
+          name: { $regex: "^" + name },
+        })
         .where("access")
         .ne("private")
         .exec();
@@ -33,14 +40,14 @@ async function get_get(req, res, next) {
     }
 
     const othersPlaylists = await playlists
-      .find({})
+      .find({ name: { $regex: "^" + name } })
       .where("user")
       .ne(sessionUser)
       .where("access")
       .equals("public")
       .exec();
 
-    for (pl of othersPlaylists) {
+    for (let pl of othersPlaylists) {
       all.othersPlaylists.push(pl);
     }
 

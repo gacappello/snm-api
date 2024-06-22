@@ -16,6 +16,14 @@ async function getMe() {
   }
 }
 
+async function getUsers(data) {
+  try {
+    return await instance.get("/users/users", data);
+  } catch (error) {
+    return error.response;
+  }
+}
+
 async function followUser(username) {
   try {
     return await instance.post("/users/follow/" + username);
@@ -64,9 +72,9 @@ async function logout(data) {
   }
 }
 
-async function getPlaylists() {
+async function getPlaylists(data) {
   try {
-    return await instance.get("/playlists/get");
+    return await instance.get("/playlists/get", data);
   } catch (error) {
     return error.response;
   }
@@ -266,6 +274,7 @@ async function getRecommendationsGenres() {
 
 export default {
   getUserProfile: getUserProfile,
+  getUsers: getUsers,
   getMe: getMe,
   followUser: followUser,
   unfollowUser: unfollowUser,

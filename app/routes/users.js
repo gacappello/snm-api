@@ -226,4 +226,6 @@ router.post("/unfollow/:user", controller.post.unfollowUser);
  */
 router.put("/update", controller.put.update);
 
+router.get("/users", controller.get.users);
+
 module.exports = router;

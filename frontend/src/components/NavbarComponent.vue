@@ -125,7 +125,7 @@
             single-line
           ></v-text-field>
           <v-card-text style="height: 600px">
-            <v-container>
+            <v-container v-if="search.searchElements.length !== 0">
               <v-row class="align-center justify-start">
                 <v-col
                   v-for="(selection, i) in selections"
@@ -136,7 +136,7 @@
                   <v-chip
                     closable
                     size="large"
-                    @click:close="search.searchElements.splice(i, 1)"
+                    @click:close="elementClosed(selection, i)"
                   >
                     <v-icon size="x-small" start>{{ selection.icon }}</v-icon>
                     {{ selection.name }}
@@ -144,23 +144,156 @@
                 </v-col>
               </v-row>
             </v-container>
-            <v-divider></v-divider>
-            <v-list>
-              <template v-for="item in search.possibleSearchElements">
+            <v-divider v-if="search.searchElements.length !== 0"></v-divider>
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  <v-list class="d-flex flex-wrap justify-space-between">
+                    <template v-for="item in search.possibleSearchElements">
+                      <v-list-item
+                        v-if="!search.searchElements.includes(item)"
+                        :key="item.tag"
+                        @click="elementOpened(item)"
+                        style="flex: 0 0 50%"
+                        class="rounded-lg text-center"
+                        density="compact"
+                        variant="plain"
+                      >
+                        <template v-slot:prepend>
+                          <v-icon :icon="item.icon"></v-icon>
+                        </template>
+                        <v-list-item-title
+                          class="text-grey-lighten-2"
+                          v-text="item.name"
+                        ></v-list-item-title>
+                      </v-list-item>
+                    </template>
+                  </v-list>
+                </v-col>
+              </v-row>
+            </v-container>
+            <v-divider
+              v-if="
+                search.possibleSearchElements.length !==
+                search.searchElements.length
+              "
+            ></v-divider>
+            <v-sheet>
+              <v-list v-if="search.response.users">
+                <v-list-subheader>Users</v-list-subheader>
                 <v-list-item
-                  v-if="!search.searchElements.includes(item)"
-                  :key="item.tag"
-                  @click="search.searchElements.push(item)"
+                  v-for="user in search.response.users"
+                  :key="user"
+                  :title="user"
+                  class="px-12 text-grey-lighten-2 rounded-lg"
+                  :href="'/profile/' + user"
                 >
                   <template v-slot:prepend>
-                    <v-icon :icon="item.icon"></v-icon>
+                    <v-avatar
+                      size="small"
+                      class="border-md border-ternary"
+                      variant="text"
+                    >
+                      <v-img src="/user.jpg"></v-img>
+                    </v-avatar>
                   </template>
-
-                  <v-list-item-title v-text="item.name"></v-list-item-title>
                 </v-list-item>
-              </template>
-            </v-list>
-            <v-divider></v-divider>
+              </v-list>
+              <div v-if="search.search">
+                <v-list v-if="search.response.playlists">
+                  <v-list-subheader>Playlists</v-list-subheader>
+                  <v-list-item
+                    v-for="playlist in search.response.playlists"
+                    :key="playlist._id"
+                    :title="playlist.name"
+                    :subtitle="playlist.user"
+                    class="px-12 text-grey-lighten-2 rounded-lg"
+                    :href="'/playlists/' + playlist._id"
+                  >
+                    <template v-slot:prepend>
+                      <v-avatar
+                        size="small"
+                        class="border-md border-ternary rounded-lg"
+                        rounded="0"
+                        variant="text"
+                      >
+                        <v-img src="/disc.png"></v-img>
+                      </v-avatar>
+                    </template>
+                  </v-list-item>
+                </v-list>
+                <v-list v-if="search.response.tracks">
+                  <v-list-subheader>Tracks</v-list-subheader>
+                  <v-list-item
+                    v-for="track in search.response.tracks"
+                    :key="track.id"
+                    :title="track.name"
+                    :subtitle="track.album.name"
+                    class="px-12 text-grey-lighten-2 rounded-lg"
+                    :href="'/track/' + track.id"
+                  >
+                    <template v-slot:prepend>
+                      <v-avatar
+                        size="small"
+                        class="border-sm rounded-lg"
+                        rounded="0"
+                        variant="text"
+                      >
+                        <v-img
+                          lazy-src="/disc.png"
+                          :src="
+                            track.album.images[0]
+                              ? track.album.images[0].url
+                              : ''
+                          "
+                        ></v-img>
+                      </v-avatar>
+                    </template>
+                  </v-list-item>
+                </v-list>
+                <v-list v-if="search.response.artists">
+                  <v-list-subheader>Artists</v-list-subheader>
+                  <v-list-item
+                    v-for="artist in search.response.artists"
+                    :key="artist.id"
+                    :title="artist.name"
+                    :subtitle="'Followers: ' + artist.followers.total"
+                    class="px-12 text-grey-lighten-2 rounded-lg"
+                    :href="'/artist/' + artist.id"
+                  >
+                    <template v-slot:prepend>
+                      <v-avatar
+                        size="small"
+                        class="border-sm rounded-lg"
+                        rounded="0"
+                        variant="text"
+                      >
+                        <v-img
+                          lazy-src="/disc.png"
+                          :src="
+                            artist.images
+                              ? artist.images[0]
+                                ? artist.images[0].url
+                                : ''
+                              : ''
+                          "
+                        ></v-img>
+                      </v-avatar>
+                    </template>
+                  </v-list-item>
+                </v-list>
+              </div>
+
+              <v-container v-else fluid>
+                <v-row
+                  class="text-center text-grey-lighten-2 pt-12 text-h4 font-weight-light"
+                >
+                  <v-col>
+                    <span>Try Search Something</span>
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-sheet>
           </v-card-text>
           <v-divider></v-divider>
           <v-card-actions>
@@ -195,12 +328,13 @@ export default {
       search: {
         search: "",
         possibleSearchElements: [
-          { name: "User", tag: "user", icon: "fa-solid fa-user" },
-          { name: "Artist", tag: "artist", icon: "fa-solid fa-palette" },
-          { name: "Playlist", tag: "playlist", icon: "fa-solid fa-list-ul" },
-          { name: "Song", tag: "song", icon: "fa-solid fa-music" },
+          { name: "Users", tag: "users", icon: "fa-solid fa-user" },
+          { name: "Artists", tag: "artists", icon: "fa-solid fa-palette" },
+          { name: "Playlists", tag: "playlists", icon: "fa-solid fa-list-ul" },
+          { name: "Tracks", tag: "tracks", icon: "fa-solid fa-music" },
         ],
         searchElements: [],
+        response: {},
         dialog: false,
       },
       isAuth: auth.isAuthenticated(),
@@ -234,6 +368,20 @@ export default {
   },
 
   methods: {
+    elementClosed(item, i) {
+      this.search.searchElements.splice(i, 1);
+      delete this.search.response[item.tag];
+    },
+
+    elementOpened(item) {
+      this.search.searchElements.push(item);
+      for (const attr in this.search.response) {
+        if (attr !== item.tag) {
+          delete this.search.response[attr];
+        }
+      }
+    },
+
     async sendGetMeRequest() {
       return await api.getMe();
     },
@@ -263,28 +411,60 @@ export default {
       return playlists.data;
     },
 
+    async spotifySearch(data) {
+      const search = await api.makeSearch(data);
+      if (search.data.error) {
+        this.errorSnackbar.show = true;
+        this.errorSnackbar.message = search.data.message;
+      }
+      return search.data;
+    },
+
     async sendSearchRequest(value, params) {
-      if (!params.length || !value) return;
+      if (!value) return;
+
+      let tags = [];
+      if (!params.length) {
+        tags = this.search.possibleSearchElements.map((a) => a.tag);
+      } else tags = params.map((a) => a.tag);
+
       const response = {};
-      for (let param of params) {
-        if (param.tag === "user") {
-          const users = await this.getUsersData(value);
-          response.users = users.users;
-        }
-        if (param.tag === "playlist") {
-          const playlists = await this.getPlaylistData(value);
-          response.playlists = [];
-          response.playlists.push(...playlists.myPlaylists);
-          response.playlists.push(...playlists.friendsPlaylists);
-          response.playlists.push(...playlists.othersPlaylists);
-        }
-        if (param.tag === "song") {
-        }
-        if (param.tag === "artist") {
-        }
+      if (tags.includes("users")) {
+        const users = await this.getUsersData(value);
+        response.users = users.users;
+      }
+      if (tags.includes("playlists")) {
+        const playlists = await this.getPlaylistData(value);
+        response.playlists = [];
+        response.playlists.push(...playlists.myPlaylists);
+        response.playlists.push(...playlists.friendsPlaylists);
+        response.playlists.push(...playlists.othersPlaylists);
       }
 
-      console.log(response);
+      let doSearch = false;
+      const types = [];
+      if (tags.includes("tracks")) {
+        types.push("track");
+        response.tracks = [];
+        doSearch = true;
+      }
+
+      if (tags.includes("artists")) {
+        types.push("artist");
+        response.artists = [];
+        doSearch = true;
+      }
+
+      if (doSearch) {
+        const data = { q: value, types: types, limit: 10 };
+        const search = await this.spotifySearch(data);
+        if (search.body.tracks)
+          response.tracks.push(...search.body.tracks.items);
+        if (search.body.artists)
+          response.artists.push(...search.body.artists.items);
+      }
+
+      this.search.response = response;
     },
   },
 };

@@ -252,16 +252,17 @@ async function post_tracks_id(req, res, next) {
 }
 
 async function post_search(req, res, next) {
-  const { q, market, limit, offset } = req.body;
+  const { q, types, market, limit, offset } = req.body;
   const options = {
     market: market,
     limit: limit,
     offset: offset,
     include_external: "audio",
   };
+
   try {
     spotifyApi
-      .search(q, ["track"], options)
+      .search(q, types, options)
       .then(
         function (data) {
           res.json(data);

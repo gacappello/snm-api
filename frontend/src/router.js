@@ -8,8 +8,13 @@ import Register from "./views/Register.vue";
 import Profile from "./views/Profile.vue";
 import Playlist from "./views/Playlist.vue";
 import Artist from "./views/Artist.vue";
+import Track from "./views/Track.vue";
 
 const routes = [
+  {
+    path: "/",
+    redirect: "/home",
+  },
   {
     path: "/login",
     name: "login",
@@ -44,6 +49,12 @@ const routes = [
     path: "/artist/:id",
     name: "artist",
     component: Artist,
+    meta: { requireAuth: true },
+  },
+  {
+    path: "/track/:id",
+    name: "track",
+    component: Track,
     meta: { requireAuth: true },
   },
   {

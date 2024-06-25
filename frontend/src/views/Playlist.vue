@@ -616,7 +616,6 @@ export default {
     },
 
     async getPlaylist() {
-      this.playlist.loading = true;
       const playlist = await api.getPlaylist(this.playlist.id);
       if (playlist.data.status === 404) {
         this.$router.push("/default");
@@ -639,11 +638,9 @@ export default {
       this.playlist.isFavourite = this.me.favourites.some(
         (item) => item._id === this.playlist.id
       );
-      this.playlist.loading = false;
     },
 
     async getPlaylistTracks() {
-      this.playlist.loading = true;
       if (this.playlist.data.songs.length > 0) {
         const tracks = await api.getTracks({ ids: this.playlist.data.songs });
         if (tracks.data.error) {
@@ -655,7 +652,6 @@ export default {
         this.playlist.tracks = tracks.data.body.tracks;
         this.updateDuration();
       }
-      this.playlist.loading = false;
     },
 
     async getAvailableGenres() {
@@ -792,6 +788,7 @@ export default {
     },
 
     async searchedTrackPressed(id) {
+      this.playlist.loading = true;
       const response = await api.insertSong(this.playlist.id, { songId: id });
       if (response.data.error) {
         this.errorSnackbar.show = true;
@@ -802,6 +799,7 @@ export default {
       this.playlist.tracks.push(id);
       await this.getPlaylist();
       await this.getPlaylistTracks();
+      this.playlist.loading = false;
     },
   },
 };

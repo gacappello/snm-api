@@ -8,8 +8,15 @@ const host = env.MONGODB_HOST;
 const password = env.MONGODB_PASSWORD;
 const proto = env.MONGODB_PROTO;
 
+const uri = env.MONGODB_URI;
+
 async function createConnection() {
-  const str = `${proto}://${user}:${password}@${host}:${port}/${database}?authMechanism=DEFAULT&authSource=${database}`;
+  let str = "";
+  if (uri) {
+    str = uri;
+  } else {
+    str = `${proto}://${user}:${password}@${host}:${port}/${database}?authMechanism=DEFAULT&authSource=${database}`;
+  }
   return await mongoose.connect(str);
 }
 

@@ -10,6 +10,7 @@ module.exports = {
   MONGODB_HOST: process.env.MONGODB_HOST,
   MONGODB_PASSWORD: process.env.MONGODB_PASSWORD,
   MONGODB_PROTO: process.env.MONGODB_PROTO,
+  MONGODB_URI: process.env.MONGODB_URI,
   PEPPER: process.env.PEPPER,
   SESSION_SECRET: process.env.SESSION_SECRET,
   CLIENT_ID: process.env.CLIENT_ID,

@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="mt-lg-12">
+  <v-container fluid>
     <v-row class="justify-center">
       <v-col cols="12" sm="10" md="6" lg="5" xl="4">
         <v-sheet class="border" color="ternary" rounded>
@@ -64,9 +64,9 @@
                     >
                     </v-text-field>
                     <v-date-input
-                      v-model="date"
+                      v-model="birth"
                       :prepend-icon="showIcons ? '$calendar' : ''"
-                      :rules="[rules.date.required]"
+                      :rules="[rules.birth.required]"
                       label="Birth date"
                       variant="outlined"
                     >
@@ -183,7 +183,7 @@ export default {
       email: null,
       firstName: null,
       lastName: null,
-      date: null,
+      birth: null,
       password: null,
       showErrorSnackbar: false,
       snackbarErrorMessage: "",
@@ -210,7 +210,7 @@ export default {
           min: (value) => value.length >= 5 || "At least 5 characters",
           max: (value) => value.length <= 30 || "At maximum 30 characters",
         },
-        date: {
+        birth: {
           required: (value) => !!value || "Required",
         },
         password: {
@@ -274,7 +274,7 @@ export default {
         email: this.email,
         firstName: this.firstName,
         lastName: this.lastName,
-        date: this.date,
+        birth: this.birth,
         password: this.password,
         genres: this.selectedGenres,
       };

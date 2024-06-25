@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import auth from "./auth";
 
 import Default from "./views/Default.vue";
+import Unauthorized from "./views/Unauthorized.vue";
 import Login from "./views/Login.vue";
 import Home from "./views/Home.vue";
 import Register from "./views/Register.vue";
@@ -34,6 +35,16 @@ const routes = [
     meta: { requireAuth: true },
   },
   {
+    path: "/default",
+    name: "default",
+    component: Default,
+  },
+  {
+    path: "/unauthorized",
+    name: "unauthorized",
+    component: Unauthorized,
+  },
+  {
     path: "/profile/:username",
     name: "profile",
     component: Profile,
@@ -59,7 +70,7 @@ const routes = [
   },
   {
     path: "/:pathMatch(.*)*",
-    name: "default",
+    name: "fallback",
     component: Default,
   },
 ];

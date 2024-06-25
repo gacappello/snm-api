@@ -2,14 +2,18 @@ const { Types } = require("mongoose");
 const playlists = require("../database/models/playlists");
 const userCredentials = require("../database/models/userCredentials");
 const { APIError } = require("../utils/api-error");
+const spotifyApi = require("../spotify");
 
 async function get_get(req, res, next) {
   const sessionId = req.session.userId;
   const sessionUser = req.session.user;
-  const { name } = req.query;
+  let { name } = req.query;
+
   try {
     const me = await userCredentials.findById(sessionId);
     if (!me) throw new APIError();
+
+    if (!name) name = "";
 
     const all = {
       myPlaylists: [],
@@ -60,7 +64,9 @@ async function get_get(req, res, next) {
 async function get_get_user(req, res, next) {
   const sessionId = req.session.userId;
   const sessionUser = req.session.user;
-  const { user } = req.params;
+  let { user } = req.params;
+  user = user.toLowerCase();
+
   try {
     const me = await userCredentials.findById(sessionId);
     if (!me) throw new APIError();
@@ -104,11 +110,12 @@ async function get_get_id(req, res, next) {
   const sessionId = req.session.userId;
   const sessionUser = req.session.user;
   const { id } = req.params;
+
   try {
     const me = await userCredentials.findById(sessionId);
     if (!me) throw new APIError();
 
-    const record = playlists.findById(id);
+    const record = await playlists.findById(id);
     if (!record)
       throw new APIError({ message: "Playlist not found", status: 404 });
 
@@ -159,16 +166,18 @@ async function delete_delete_id(req, res, next) {
 async function post_add(req, res, next) {
   const sessionId = req.session.userId;
   const sessionUser = req.session.user;
-  const { name, description, tags, access } = req.body;
+  const { name, description, tags, access, src } = req.body;
   try {
     const iExists = await userCredentials.exists({ _id: sessionId });
     if (!iExists) throw new APIError();
 
     const playlist = {
+      user: sessionUser,
       name: name,
       description: description || `A playlist from ${sessionUser}`,
       tags: tags || [],
       access: access,
+      src: src,
     };
 
     const doc = new playlists(playlist);
@@ -183,7 +192,7 @@ async function post_add(req, res, next) {
 async function put_modify_id(req, res, next) {
   const sessionId = req.session.userId;
   const sessionUser = req.session.user;
-  const { name, description, tags, songs, access } = req.body;
+  const { name, description, tags, songs, access, src } = req.body;
   const { id } = req.params;
 
   const update = {};
@@ -192,6 +201,7 @@ async function put_modify_id(req, res, next) {
   if (tags) update.tags = tags;
   if (songs) update.songs = songs;
   if (access) update.access = access;
+  if (src) update.src = src;
 
   try {
     const iExists = await userCredentials.exists({ _id: sessionId });
@@ -231,8 +241,9 @@ async function post_like_id(req, res, next) {
         status: 404,
       });
 
+    const oid = new Types.ObjectId(id);
     await userCredentials.findByIdAndUpdate(sessionId, {
-      $addToSet: { favourites: Types.ObjectId(id) },
+      $addToSet: { favourites: oid },
     });
     res.status(204).send();
   } catch (error) {
@@ -247,8 +258,9 @@ async function post_dislike_id(req, res, next) {
     const iExists = await userCredentials.exists({ _id: sessionId });
     if (!iExists) throw new APIError();
 
+    const oid = new Types.ObjectId(id);
     await userCredentials.findByIdAndUpdate(sessionId, {
-      $pull: { favourites: Types.ObjectId(id) },
+      $pull: { favourites: oid },
     });
     res.status(204).send();
   } catch (error) {
@@ -265,7 +277,43 @@ async function put_insert_song_id(req, res, next) {
     const iExists = await userCredentials.exists({ _id: sessionId });
     if (!iExists) throw new APIError();
 
-    const record = await playlists.findOneAndUpdate(
+    let track = {};
+    await spotifyApi
+      .getTrack(songId)
+      .then(
+        function (data) {
+          track = data;
+        },
+        function (err) {
+          throw new APIError({
+            message: err.message,
+            status: err.status,
+          });
+        }
+      )
+      .catch(function (err) {
+        next(err);
+      });
+
+    let src = undefined;
+    if (track.body.album && track.body.album.images[0]) {
+      src = track.body.album.images[0].url;
+    }
+
+    let record = await playlists.findById(id);
+    if (!record) {
+      throw new APIError({
+        message: "Playlist not found for " + sessionUser,
+        status: 404,
+      });
+    }
+
+    if (!record.src) {
+      record.src = src;
+      await record.save();
+    }
+
+    record = await playlists.findOneAndUpdate(
       { _id: id, user: sessionUser },
       { $push: { songs: songId } },
       {
@@ -273,11 +321,6 @@ async function put_insert_song_id(req, res, next) {
         runValidators: true,
       }
     );
-    if (!record)
-      throw new APIError({
-        message: "Playlist not found for " + sessionUser,
-        status: 404,
-      });
 
     res.status(204).send();
   } catch (error) {
@@ -312,65 +355,8 @@ async function put_remove_song_id(req, res, next) {
       throw new APIError({ message: "Invalid position: ", status: 400 });
 
     playlist.songs.splice(position, 1);
+    if (!playlist.songs.length) playlist.src = undefined;
     await playlist.save();
-
-    res.status(204).send();
-  } catch (error) {
-    next(error);
-  }
-}
-
-async function put_insert_tag_id(req, res, next) {
-  const sessionId = req.session.userId;
-  const sessionUser = req.session.user;
-  const { id } = req.params;
-  const { tag } = req.body;
-  try {
-    const iExists = await userCredentials.exists({ _id: sessionId });
-    if (!iExists) throw new APIError();
-
-    const record = await playlists.findOneAndUpdate(
-      { _id: id, user: sessionUser },
-      { $addToSet: { tags: tag } },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-    if (!record)
-      throw new APIError({
-        message: "Playlist not found for " + sessionUser,
-        status: 404,
-      });
-
-    res.status(204).send();
-  } catch (error) {
-    next(error);
-  }
-}
-
-async function put_remove_tag_id(req, res, next) {
-  const sessionId = req.session.userId;
-  const sessionUser = req.session.user;
-  const { id } = req.params;
-  const { tag } = req.body;
-  try {
-    const iExists = await userCredentials.exists({ _id: sessionId });
-    if (!iExists) throw new APIError();
-
-    const record = await playlists.findOneAndUpdate(
-      { _id: id, user: sessionUser },
-      { $pull: { tags: tag } },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-    if (!record)
-      throw new APIError({
-        message: "Playlist not found for " + sessionUser,
-        status: 404,
-      });
 
     res.status(204).send();
   } catch (error) {
@@ -396,7 +382,5 @@ module.exports = {
     modifyId: put_modify_id,
     insertSongId: put_insert_song_id,
     removeSongId: put_remove_song_id,
-    insertTagId: put_insert_tag_id,
-    removeTagId: put_remove_tag_id,
   },
 };

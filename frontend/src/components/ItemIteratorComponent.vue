@@ -14,7 +14,12 @@
         <v-col cols="10">
           <v-row class="flex-nowrap">
             <transition-group name="slide">
-              <v-col v-for="item in items" :key="item.raw._id">
+              <v-col
+                v-for="item in items"
+                :key="
+                  itemKeyName ? (item.raw ? item.raw[itemKeyName] : item) : item
+                "
+              >
                 <slot name="default" :item="item"></slot>
               </v-col>
               <v-col
@@ -50,6 +55,9 @@ export default {
     itemsToDisplay: {
       type: Array,
       required: true,
+    },
+    itemKeyName: {
+      type: String,
     },
     xs: {
       type: Number,

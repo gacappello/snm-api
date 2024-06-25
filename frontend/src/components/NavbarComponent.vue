@@ -15,10 +15,14 @@
         class="text-grey-lighten-1 cursor-pointer"
         @click="$router.push('/home')"
       >
-        <span class="font-weight-bold">SNM </span>
+        <span class="font-weight-bold"
+          >S<span class="text-ternary">N</span>M
+        </span>
         <span class="font-italic">
           - Social Network for Music
-          <v-icon right size="x-small">fa-solid fa-music</v-icon>
+          <v-icon right size="x-small" color="ternary"
+            >fa-solid fa-music</v-icon
+          >
         </span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
@@ -84,13 +88,6 @@
         ></v-list-item>
         <v-list-item
           density="comfortable"
-          prepend-icon="fa-solid fa-music"
-          title="Playlists"
-          value="playlists"
-          @click="$router.push('/playlists')"
-        ></v-list-item>
-        <v-list-item
-          density="comfortable"
           prepend-icon="fa-solid fa-right-to-bracket"
           title="Login"
           value="login"
@@ -106,10 +103,155 @@
           class="hidden-sm-and-up"
           @click="logoutPressed()"
           v-if="isAuth"
-        ></v-list-item> </v-list
-    ></v-navigation-drawer>
+        ></v-list-item>
+      </v-list>
+      <v-divider></v-divider>
+      <v-row class="py-4">
+        <v-col cols="12" class="d-flex justify-center align-center">
+          <v-btn
+            variant="tonal"
+            color="ternary"
+            icon="fa-solid fa-plus"
+            @click="add.dialog = true"
+          ></v-btn>
+        </v-col>
+      </v-row>
+      <v-divider></v-divider>
+      <v-row class="pa-4">
+        <v-col class="d-flex justify-center">
+          <span class="text-subtitle-2 text-grey-lighten-1">All</span>
+        </v-col>
+      </v-row>
+      <v-list>
+        <v-list-item
+          v-for="playlist in myPlaylists"
+          :key="playlist._id"
+          class="text-grey-lighten-2"
+          link
+        >
+          <template v-slot:prepend>
+            <v-avatar
+              size="small"
+              class="border-md rounded-lg"
+              rounded="0"
+              variant="text"
+            >
+              <v-img lazy-src="/disc.png" :src="playlist.src"> </v-img>
+            </v-avatar>
+          </template>
+          <a
+            :href="'/playlist/' + playlist._id"
+            style="text-decoration: none"
+            class="text-grey-lighten-2"
+          >
+            <v-list-item-title
+              class="font-weight-regular"
+              v-text="playlist.name"
+            ></v-list-item-title>
+          </a>
+          <v-list-item-subtitle v-text="playlist.access">
+          </v-list-item-subtitle>
+          <template v-slot:append>
+            <div class="d-flex">
+              <v-btn
+                @click.stop="
+                  favourites.some((item) => item._id === playlist._id)
+                    ? dislikePressed(playlist)
+                    : likePressed(playlist)
+                "
+                :color="
+                  favourites.some((item) => item._id === playlist._id)
+                    ? 'ternary'
+                    : ''
+                "
+                size="x-small"
+                icon="fa-solid fa-heart"
+                variant="text"
+              ></v-btn>
+              <v-btn
+                @click.stop="
+                  selectedId = playlist._id;
+                  remove.dialog = true;
+                "
+                size="x-small"
+                icon="fa-solid fa-trash"
+                color="red-lighten-2"
+                variant="text"
+              ></v-btn>
+            </div>
+          </template>
+        </v-list-item>
+      </v-list>
+      <v-divider></v-divider>
+      <v-row class="pa-4">
+        <v-col class="d-flex justify-center">
+          <span class="text-subtitle-2 text-grey-lighten-1">Favourites</span>
+        </v-col>
+      </v-row>
+      <v-list>
+        <v-list-item
+          v-for="playlist in favourites"
+          :key="playlist._id"
+          class="text-grey-lighten-2"
+          link
+        >
+          <template v-slot:prepend>
+            <v-avatar
+              size="small"
+              class="border-md rounded-lg"
+              rounded="0"
+              variant="text"
+            >
+              <v-img lazy-src="/disc.png" :src="playlist.src"> </v-img>
+            </v-avatar>
+          </template>
+          <a
+            :href="'/playlist/' + playlist._id"
+            style="text-decoration: none"
+            class="text-grey-lighten-2"
+          >
+            <v-list-item-title
+              class="font-weight-regular"
+              v-text="playlist.name"
+            ></v-list-item-title>
+          </a>
+          <v-list-item-subtitle v-text="playlist.access">
+          </v-list-item-subtitle>
+          <template v-slot:append>
+            <div class="d-flex">
+              <v-btn
+                @click.stop="
+                  favourites.some((item) => item._id === playlist._id)
+                    ? dislikePressed(playlist)
+                    : likePressed(playlist)
+                "
+                :color="
+                  favourites.some((item) => item._id === playlist._id)
+                    ? 'ternary'
+                    : ''
+                "
+                size="x-small"
+                icon="fa-solid fa-heart"
+                variant="text"
+              ></v-btn>
+              <v-btn
+                @click.stop="
+                  selectedId = playlist._id;
+                  remove.dialog = true;
+                "
+                size="x-small"
+                icon="fa-solid fa-trash"
+                color="red-lighten-2"
+                variant="text"
+              ></v-btn>
+            </div>
+          </template>
+        </v-list-item>
+      </v-list>
+      <v-divider></v-divider>
+    </v-navigation-drawer>
   </nav>
-  <div class="pa-4 text-center">
+  <div class="">
     <v-dialog v-model="search.dialog" scrollable width="550px">
       <template v-slot:default>
         <v-card class="rounded-lg">
@@ -208,7 +350,7 @@
                     :title="playlist.name"
                     :subtitle="playlist.user"
                     class="px-12 text-grey-lighten-2 rounded-lg"
-                    :href="'/playlists/' + playlist._id"
+                    :href="'/playlist/' + playlist._id"
                   >
                     <template v-slot:prepend>
                       <v-avatar
@@ -217,7 +359,7 @@
                         rounded="0"
                         variant="text"
                       >
-                        <v-img src="/disc.png"></v-img>
+                        <v-img lazy-src="/disc.png" :src="playlist.src"></v-img>
                       </v-avatar>
                     </template>
                   </v-list-item>
@@ -303,6 +445,90 @@
       </template>
     </v-dialog>
   </div>
+  <div class="">
+    <v-dialog v-model="add.dialog" scrollable width="550px">
+      <template v-slot:default>
+        <v-card class="rounded-lg">
+          <v-toolbar floating>
+            <v-toolbar-title>Create a playlist</v-toolbar-title>
+          </v-toolbar>
+          <v-card-text>
+            <v-form ref="form" v-model="add.addForm" lazy-validation>
+              <v-row dense>
+                <v-col cols="6">
+                  <v-text-field
+                    v-model="add.name"
+                    label="Name"
+                    variant="outlined"
+                    :rules="[add.rules.name.max, add.rules.name.min]"
+                    counter
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="6">
+                  <v-select
+                    v-model="add.accessSelection"
+                    label="Access"
+                    :items="add.access"
+                    item-title="name"
+                    item-value="value"
+                  >
+                  </v-select>
+                </v-col>
+                <v-col cols="12">
+                  <v-textarea
+                    v-model="add.description"
+                    label="Description"
+                    variant="outlined"
+                    :rules="[
+                      add.rules.description.max,
+                      add.rules.description.min,
+                    ]"
+                    counter
+                  ></v-textarea>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="add.src"
+                    label="Src"
+                    variant="outlined"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </v-form>
+          </v-card-text>
+          <v-divider></v-divider>
+          <v-card-actions>
+            <v-btn text="close" @click="add.dialog = false"></v-btn>
+            <v-btn
+              text="save"
+              variant="tonal"
+              @click="addPlaylistPressed()"
+            ></v-btn>
+          </v-card-actions>
+        </v-card>
+      </template>
+    </v-dialog>
+  </div>
+  <div class="">
+    <v-dialog v-model="remove.dialog" width="auto">
+      <v-card
+        max-width="400"
+        prepend-icon="fa-solid fa-triangle-exclamation"
+        text="You're about to delete this playlist! Are you sure you want to continue?"
+        title="Deleting playlist"
+      >
+        <template v-slot:actions>
+          <v-btn text="Yes" @click="deletePlaylistPressed()"></v-btn>
+          <v-btn
+            variant="flat"
+            color="ternary"
+            text="No"
+            @click="remove.dialog = false"
+          ></v-btn>
+        </template>
+      </v-card>
+    </v-dialog>
+  </div>
   <v-snackbar v-model="errorSnackbar.show"
     >{{ errorSnackbar.message }}
     <template v-slot:actions>
@@ -314,6 +540,7 @@
 </template>
 
 <script>
+import lodash from "lodash";
 import api from "../api";
 import auth from "../auth";
 
@@ -321,9 +548,38 @@ export default {
   data() {
     return {
       me: null,
+      myPlaylists: [],
+      favourites: [],
       errorSnackbar: {
         show: false,
         message: "",
+      },
+      selectedId: "",
+      remove: {
+        dialog: false,
+      },
+      add: {
+        name: "",
+        description: "",
+        src: "",
+        accessSelection: "private",
+        access: [
+          { value: "private", name: "Private" },
+          { value: "public", name: "Public" },
+          { value: "followers", name: "Followers" },
+        ],
+        addForm: false,
+        dialog: false,
+        rules: {
+          name: {
+            min: (value) => value.length >= 3 || "At least 3 characters",
+            max: (value) => value.length <= 30 || "At maximum 30 characters",
+          },
+          description: {
+            min: (value) => value.length >= 3 || "At least 3 characters",
+            max: (value) => value.length <= 100 || "At maximum 100 characters",
+          },
+        },
       },
       search: {
         search: "",
@@ -360,10 +616,8 @@ export default {
 
   async beforeMount() {
     if (this.isAuth) {
-      const me = await this.sendGetMeRequest();
-      if (!me.data.error) {
-        this.me = me.data.user;
-      }
+      await this.getMe();
+      await this.getPlaylists();
     }
   },
 
@@ -382,8 +636,23 @@ export default {
       }
     },
 
-    async sendGetMeRequest() {
-      return await api.getMe();
+    async getMe() {
+      const me = await api.getMe();
+      if (!me.data.error) {
+        this.me = me.data.user;
+      }
+    },
+
+    async getPlaylists() {
+      const playlists = await api.getPlaylistsOfUser(this.me.username);
+      if (playlists.data.error) {
+        this.errorSnackbar.show = true;
+        this.errorSnackbar.message = playlists.data.message;
+        return;
+      }
+
+      this.myPlaylists = playlists.data.playlists;
+      this.favourites = this.me.favourites;
     },
 
     logoutPressed() {
@@ -409,6 +678,65 @@ export default {
         this.errorSnackbar.message = playlists.data.message;
       }
       return playlists.data;
+    },
+
+    async addPlaylistPressed() {
+      this.$refs.form.validate();
+      if (this.add.addForm) {
+        const options = {
+          name: this.add.name,
+          description: this.add.description,
+          access: this.add.accessSelection,
+          src: this.add.src,
+        };
+        const response = await api.addPlaylist(options);
+        if (response.data.error) {
+          this.errorSnackbar.show = true;
+          this.errorSnackbar.message = response.data.message;
+        }
+
+        this.add.dialog = false;
+        await this.getPlaylists();
+      }
+    },
+
+    async likePressed(playlist) {
+      const response = await api.likePlaylist(playlist._id);
+      if (response.data.error) {
+        this.errorSnackbar.show = true;
+        this.errorSnackbar.message = response.data.message;
+        return;
+      }
+      if (!this.favourites.some((item) => item._id === playlist._id)) {
+        this.favourites.push({ ...playlist });
+      }
+    },
+
+    async dislikePressed(playlist) {
+      const response = await api.dislikePlaylist(playlist._id);
+      if (response.data.error) {
+        this.errorSnackbar.show = true;
+        this.errorSnackbar.message = response.data.message;
+        return;
+      }
+
+      lodash.remove(this.favourites, { _id: playlist._id });
+    },
+
+    async deletePlaylistPressed() {
+      const response = await api.deletePlaylist(this.selectedId);
+      if (response.data.error) {
+        this.errorSnackbar.show = true;
+        this.errorSnackbar.message = response.data.message;
+        this.remove.dialog = false;
+        return;
+      }
+
+      lodash.remove(this.myPlaylists, (item) =>
+        lodash.isMatch(item, { _id: this.selectedId })
+      );
+
+      this.remove.dialog = false;
     },
 
     async spotifySearch(data) {

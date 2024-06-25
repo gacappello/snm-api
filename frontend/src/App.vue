@@ -1,9 +1,12 @@
 <template>
   <v-app>
-    <div class="singer"></div>
+    <div
+      class="singer"
+      :style="{ backgroundImage: `url(${backgroundImage})` }"
+    ></div>
     <NavbarComponent />
     <v-main style="z-index: 1">
-      <router-view> </router-view>
+      <router-view @changeBackground="updateBackground"> </router-view>
     </v-main>
     <FooterComponent />
   </v-app>
@@ -15,12 +18,20 @@ import FooterComponent from "./components/FooterComponent.vue";
 
 export default {
   name: "App",
+  emits: ["changeBackground"],
   components: {
     NavbarComponent,
     FooterComponent,
   },
+  methods: {
+    updateBackground(newImage) {
+      this.backgroundImage = newImage || "/singer.jpeg";
+    },
+  },
   data() {
-    return {};
+    return {
+      backgroundImage: "/singer.jpeg",
+    };
   },
 };
 </script>

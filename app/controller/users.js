@@ -3,9 +3,15 @@ const userCredentials = require("../database/models/userCredentials");
 
 async function get_get_user(req, res, next) {
   const sessionUser = req.session.user;
-  const { user } = req.params;
+  let { user } = req.params;
+  user = user.toLowerCase();
+
   try {
-    const record = await userCredentials.findOne({ username: user });
+    const record = await userCredentials
+      .findOne({ username: user })
+      .populate("favourites")
+      .exec();
+
     if (!record)
       throw new APIError({ message: "Username is unknown", status: 404 });
 
@@ -17,11 +23,17 @@ async function get_get_user(req, res, next) {
 }
 
 async function get_users(req, res, next) {
-  const { user } = req.query;
+  let { user } = req.query;
+  user = user.toLowerCase();
+
   try {
-    const records = await userCredentials.find({
-      username: { $regex: "^" + user },
-    });
+    const records = await userCredentials
+      .find({
+        username: { $regex: "^" + user },
+      })
+      .populate("favourites")
+      .exec();
+
     const response = [];
     if (records) for (let r of records) if (r) response.push(r.username);
     res.json({ users: response });
@@ -34,7 +46,11 @@ async function get_get_me(req, res, next) {
   const sessionUser = req.session.user;
   const sessionId = req.session.userId;
   try {
-    const record = await userCredentials.findById(sessionId);
+    const record = await userCredentials
+      .findById(sessionId)
+      .populate("favourites")
+      .exec();
+
     if (!record) throw new APIError();
 
     const safe = await record.getSafe(sessionUser);
@@ -47,7 +63,9 @@ async function get_get_me(req, res, next) {
 async function post_follow_user(req, res, next) {
   const sessionId = req.session.userId;
   const sessionUser = req.session.user;
-  const { user } = req.params;
+  let { user } = req.params;
+  user = user.toLowerCase();
+
   try {
     if (sessionUser === user)
       throw new APIError({ message: "Cannot follow yourself", status: 400 });
@@ -77,7 +95,9 @@ async function post_follow_user(req, res, next) {
 async function post_unfollow_user(req, res, next) {
   const sessionId = req.session.userId;
   const sessionUser = req.session.user;
-  const { user } = req.params;
+  let { user } = req.params;
+  user = user.toLowerCase();
+
   try {
     if (sessionUser === user)
       throw new APIError({ message: "Cannot unfollow yourself", status: 400 });
@@ -102,13 +122,15 @@ async function post_unfollow_user(req, res, next) {
 
 async function put_update(req, res, next) {
   const sessionId = req.session.userId;
-  const { firstName, lastName, genres, bio, password, email } = req.body;
+  const { firstName, lastName, genres, bio, password, email, username } =
+    req.body;
 
   const update = {};
   if (firstName) update.firstName = firstName;
   if (lastName) update.lastName = lastName;
   if (genres) update.genres = genres;
-  if (email) update.email = email;
+  if (email) update.email = email.toLowerCase();
+  if (username) update.username = username.toLowerCase();
   if (password) update.password = password;
   if (bio) update.bio = bio;
 

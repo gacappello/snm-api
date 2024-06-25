@@ -49,7 +49,9 @@ async function post_register(req, res, next) {
 }
 
 async function post_login(req, res, next) {
-  const { cred, password } = req.body;
+  let { cred, password } = req.body;
+  cred = cred.toLowerCase();
+
   try {
     if (req.session.user) {
       return res.status(204).send();
@@ -65,9 +67,8 @@ async function post_login(req, res, next) {
 
     let record;
     if (validator.isEmail(cred.toLowerCase()))
-      record = await userCredentials.findOne({ email: cred.toLowerCase() });
-    else
-      record = await userCredentials.findOne({ username: cred.toLowerCase() });
+      record = await userCredentials.findOne({ email: cred });
+    else record = await userCredentials.findOne({ username: cred });
     if (!record || !(await record.compareHash(password))) {
       throw new APIError({ message: "Bad Credentials", status: 401 });
     }

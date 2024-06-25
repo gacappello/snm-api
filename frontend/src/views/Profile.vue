@@ -182,12 +182,17 @@
             </v-hover>
           </v-col>
         </v-row>
-        <v-row>
+        <v-row
+          v-if="
+            requestedUsernameData.playlists.filter((p) => p.access === 'public')
+              .length > 0
+          "
+        >
           <v-col cols="12">
-            <span class="text-h6 font-weight-light">
+            <h1 class="text-h4 font-weight-light">
               {{ requestedUsernameData.username.toUpperCase() + "'S" }} PUBLIC
               PLAYLISTS
-            </span>
+            </h1>
           </v-col>
           <v-col cols="12">
             <ItemIteratorComponent
@@ -197,6 +202,7 @@
                   (p) => p.access === 'public'
                 )
               "
+              :itemKeyName="'_id'"
               :xl="5"
             >
               <template v-slot:default="{ item }">
@@ -219,16 +225,38 @@
             </ItemIteratorComponent>
           </v-col>
         </v-row>
+        <v-row v-else dense>
+          <v-col cols="12" class="pt-12 text-center text-h5">
+            <h2>
+              There are <span class="text-ternary">0</span> (public) playlists
+              in <span class="text-ternary">this</span> profile!
+            </h2>
+          </v-col>
+          <v-col cols="12" class="text-center text-h6">
+            <h3>Get <span class="text-ternary">back</span> later!</h3>
+          </v-col>
+          <v-col cols="12" class="text-center text-button">
+            <a class="text-ternary text-decoration-none" href="/home">
+              Try here
+              <v-icon size="small">fa-solid fa-arrow-right</v-icon>
+            </a>
+          </v-col>
+        </v-row>
       </v-col>
     </v-row>
   </v-container>
   <v-container>
-    <v-row>
+    <v-row
+      v-if="
+        requestedUsernameData.playlists.filter((p) => p.access === 'public')
+          .length > 0
+      "
+    >
       <v-col cols="12">
-        <span class="text-h6 font-weight-light">
+        <h1 class="text-h4 font-weight-light">
           {{ requestedUsernameData.username.toUpperCase() + "'S" }} PUBLIC
           PLAYLISTS
-        </span>
+        </h1>
       </v-col>
       <v-col cols="12">
         <ItemIteratorComponent
@@ -236,6 +264,7 @@
           :itemsToDisplay="
             requestedUsernameData.playlists.filter((p) => p.access === 'public')
           "
+          :itemKeyName="'_id'"
         >
           <template v-slot:default="{ item }">
             <v-row>
@@ -259,17 +288,18 @@
     </v-row>
   </v-container>
   <v-container id="playlists">
-    <v-row>
+    <v-row v-if="requestedUsernameData.playlists.length > 0">
       <v-col cols="12">
-        <span class="text-h6 font-weight-light">
+        <h1 class="text-h4 font-weight-light">
           {{ requestedUsernameData.username.toUpperCase() + "'S" }} VISIBLE
           PLAYLISTS
-        </span>
+        </h1>
       </v-col>
       <v-col cols="12">
         <ItemIteratorComponent
           v-if="!playlists.loading"
           :itemsToDisplay="lodash.shuffle(requestedUsernameData.playlists)"
+          :itemKeyName="'_id'"
         >
           <template v-slot:default="{ item }">
             <v-row>
@@ -434,7 +464,7 @@
             <template v-slot:item.1>
               <v-card style="height: 550px">
                 <v-card-text>
-                  <v-form ref="form" lazy-validation>
+                  <v-form ref="form" v-model="user.userForm" lazy-validation>
                     <v-row dense>
                       <v-col cols="12" md="6">
                         <v-text-field
@@ -564,6 +594,7 @@
 
 <script>
 import api from "../api";
+import auth from "../auth";
 import validator from "validator";
 import { useDisplay } from "vuetify";
 import PlaylistSheetComponent from "../components/PlaylistSheetComponent.vue";
@@ -621,6 +652,7 @@ export default {
       },
       user: {
         loading: true,
+        userForm: false,
         dialog: false,
         firstName: "",
         lastName: "",
@@ -630,32 +662,29 @@ export default {
         username: "",
         rules: {
           username: {
-            min: (value) =>
-              value.length == 0 || value.length >= 5 || "At least 5 characters",
+            min: (value) => value.length >= 5 || "At least 5 characters",
             max: (value) => value.length <= 30 || "At maximum 30 characters",
           },
           email: {
             validate: (value) =>
-              value.length == 0 ||
-              validator.isEmail(value) ||
-              "Insert a valid email",
+              validator.isEmail(value) || "Insert a valid email",
           },
           bio: {
             max: (value) => value.length <= 30 || "At maximum 40 characters",
           },
           firstName: {
-            min: (value) =>
-              value.length == 0 || value.length >= 5 || "At least 5 characters",
+            min: (value) => value.length >= 5 || "At least 5 characters",
             max: (value) => value.length <= 30 || "At maximum 30 characters",
           },
           lastName: {
-            min: (value) =>
-              value.length == 0 || value.length >= 5 || "At least 5 characters",
+            min: (value) => value.length >= 5 || "At least 5 characters",
             max: (value) => value.length <= 30 || "At maximum 30 characters",
           },
           password: {
             min: (value) =>
-              value.length == 0 || value.length >= 8 || "At least 8 characters",
+              value.length === 0 ||
+              value.length >= 8 ||
+              "At least 8 characters",
           },
         },
       },
@@ -672,7 +701,7 @@ export default {
       requestedUsernameData: {
         username: this.$route.params.username,
         data: null,
-        playlists: null,
+        playlists: [],
         following: false,
       },
     };
@@ -761,20 +790,47 @@ export default {
     },
 
     async saveUserDialogPressed() {
-      const update = {};
-      if (this.user.bio) update.bio = this.user.bio;
-      if (this.user.email) update.email = this.user.email;
-      if (this.user.firstName) update.firstName = this.user.firstName;
-      if (this.user.lastName) update.lastName = this.user.lastName;
-      if (this.user.password) update.bio = this.user.password;
-      if (this.user.username) update.username = this.user.username;
-      update.genres = this.selectedGenres;
-      const response = await api.updateUser(update);
-      if (response.data.error) {
-        this.errorSnackbar.show = true;
-        this.errorSnackbar.message = response.data.message;
+      this.$refs.form.validate();
+      if (this.user.userForm) {
+        const options = {
+          bio: this.user.bio,
+          firstName: this.user.firstName,
+          lastName: this.user.firstName,
+          genres: this.selectedGenres,
+          email: this.user.email,
+          username: this.user.username,
+        };
+
+        let logout = false;
+        if (
+          this.user.email !== this.me.email ||
+          this.user.username !== this.me.username ||
+          this.user.password.length > 0
+        ) {
+          logout = true;
+        }
+
+        if (this.user.password.length) {
+          options.password = this.user.password;
+        }
+
+        const response = await api.updateUser(options);
+        if (response.data.error) {
+          this.errorSnackbar.show = true;
+          this.errorSnackbar.message = response.data.message;
+          return;
+        }
+
+        this.user.dialog = false;
+        if (logout) {
+          auth.makeLogout();
+          this.$router.push("/login").then(() => {
+            this.$router.go(0);
+          });
+        }
+
+        await this.updateRequestedUser();
       }
-      this.user.dialog = false;
     },
 
     async followButtonPressed() {
@@ -819,27 +875,7 @@ export default {
     if (playlistsResponse.data.error) {
       this.errorSnackbar.show = true;
       this.errorSnackbar.message = playlistsResponse.data.message;
-    }
-
-    const playlists = playlistsResponse.data.playlists;
-    const ids = [];
-    for (let p of playlists) {
-      if (p.songs.length > 0) ids.push(p.songs[0]);
-    }
-
-    const spotifyResponse = await api.getTracks({ ids: ids });
-    if (spotifyResponse.data.error) {
-      this.errorSnackbar.show = true;
-      this.errorSnackbar.message = spotifyResponse.data.message;
-    }
-
-    for (let i = 0; i < playlists.length; i++) {
-      let track = spotifyResponse.data.body.tracks[i];
-      playlists[i].src = undefined;
-      if (track) {
-        playlists[i].src =
-          spotifyResponse.data.body.tracks[i].album.images[0].url;
-      }
+      return;
     }
 
     this.playlists.loading = false;

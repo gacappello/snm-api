@@ -9,5 +9,4 @@ const spotifyApi = new SpotifyWebApi({
   clientSecret: clientSecret,
 });
 
-// export default spotifyApi;
 module.exports = spotifyApi;

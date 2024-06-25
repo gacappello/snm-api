@@ -114,7 +114,7 @@ async function addPlaylist(data) {
 
 async function modifyPlaylist(id, data) {
   try {
-    return await instance.post("/playlists/modify/" + id, data);
+    return await instance.put("/playlists/modify/" + id, data);
   } catch (error) {
     return error.response;
   }
@@ -168,38 +168,6 @@ async function removeTag(id, data) {
   }
 }
 
-async function getAlbums(data) {
-  try {
-    return await instance.post("/sapi/albums", data);
-  } catch (error) {
-    return error.response;
-  }
-}
-
-async function getAlbum(id, data) {
-  try {
-    return await instance.post("/sapi/albums/" + id, data);
-  } catch (error) {
-    return error.response;
-  }
-}
-
-async function getAlbumTracks(id, data) {
-  try {
-    return await instance.post("/sapi/albums/" + id + "/tracks", data);
-  } catch (error) {
-    return error.response;
-  }
-}
-
-async function getArtists(data) {
-  try {
-    return await instance.post("/sapi/artists", data);
-  } catch (error) {
-    return error.response;
-  }
-}
-
 async function getArtist(id) {
   try {
     return await instance.get("/sapi/artists/" + id);
@@ -208,25 +176,9 @@ async function getArtist(id) {
   }
 }
 
-async function getArtistAlbums(id, data) {
-  try {
-    return await instance.post("/sapi/artists/" + id + "/albums", data);
-  } catch (error) {
-    return error.response;
-  }
-}
-
 async function getArtistTopTracks(id, data) {
   try {
     return await instance.post("/sapi/artists/" + id + "/top-tracks", data);
-  } catch (error) {
-    return error.response;
-  }
-}
-
-async function getArtistRelatedArtists(id) {
-  try {
-    return await instance.get("/sapi/artists/" + id + "/top-tracks");
   } catch (error) {
     return error.response;
   }
@@ -297,15 +249,8 @@ export default {
   insertTag: insertTag,
   removeTag: removeTag,
 
-  getAlbums: getAlbums,
-  getAlbum: getAlbum,
-  getAlbumTracks: getAlbumTracks,
-
-  getArtists: getArtists,
   getArtist: getArtist,
-  getArtistAlbums: getArtistAlbums,
   getArtistTopTracks: getArtistTopTracks,
-  getArtistRelatedArtists: getArtistRelatedArtists,
 
   getTracks: getTracks,
   getTrack: getTrack,

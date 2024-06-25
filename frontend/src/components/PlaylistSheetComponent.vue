@@ -10,7 +10,7 @@
       hover
       class="rounded-lg"
       v-bind="props"
-      @click="$router.push('/playlists/' + _id)"
+      @click="$router.push('/playlist/' + _id)"
     >
       <template v-slot:title>
         <div class="font-weight-black text-h4 gradient text-truncate pa-4">
@@ -22,6 +22,7 @@
           :src="src"
           aspect-ratio="1"
           height="350px"
+          width="350px"
           lazy-src="/disc.png"
           cover
         >

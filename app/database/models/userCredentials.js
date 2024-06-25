@@ -58,12 +58,6 @@ const userCredentialsSchema = new mongoose.Schema(
     bio: {
       type: String,
       max: [30, "Bio must be at maximum 40 characters!"],
-      validate: {
-        validator: function (value) {
-          return validator.isAlphanumeric(value);
-        },
-        message: "Invalid bio format!",
-      },
       default: "",
     },
     password: {
@@ -83,15 +77,19 @@ const userCredentialsSchema = new mongoose.Schema(
     },
     favourites: {
       type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Playlists" }],
+      default: [],
     },
     genres: {
       type: [String],
+      default: [],
     },
     followers: {
       type: [String],
+      default: [],
     },
     follows: {
       type: [String],
+      default: [],
     },
   },
   {
@@ -110,6 +108,20 @@ userCredentialsSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
+
+userCredentialsSchema.pre(
+  ["updateOne", "findByIdAndUpdate", "findOneAndUpdate"],
+  async function (next) {
+    const data = this.getUpdate();
+    if (data.password) {
+      data.password += pepper;
+      const salt = await bcrypt.genSalt(16);
+      data.password = await bcrypt.hash(data.password, salt);
+    }
+
+    next();
+  }
+);
 
 userCredentialsSchema.methods.compareHash = async function (data) {
   const hash = this.password;

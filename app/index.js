@@ -31,16 +31,33 @@ const vueLocation = env.VUE_LOCATION;
 
 const store = new session.MemoryStore();
 
+async function tokenRenewal() {
+  try {
+    INFO("Trying to get auth from Spotify...");
+    const o = await spotifyApi.clientCredentialsGrant();
+    const token = o.body["access_token"];
+    const expires = o.body["expires_in"];
+    INFO("Token: " + token);
+
+    spotifyApi.setAccessToken(token);
+    INFO(`Expires in: ${expires}s`);
+    INFO("Token set");
+
+    setTimeout(tokenRenewal, 3540 * 1000);
+  } catch (error) {
+    ERROR(error.message);
+    setTimeout(tokenRenewal, 10 * 1000);
+    ERROR("Retry in 10s");
+  }
+}
+
 async function initWebAPI() {
   try {
     INFO("Trying connection to database...");
     await database.createConnection();
     INFO("Connected");
-    INFO("Trying to get auth from Spotify...");
-    const o = await spotifyApi.clientCredentialsGrant();
-    INFO("Token: " + o.body["access_token"]);
-    spotifyApi.setAccessToken(o.body["access_token"]);
     INFO("Auth confirmed");
+    await tokenRenewal();
   } catch (error) {
     ERROR(error.message);
     process.exit(1);

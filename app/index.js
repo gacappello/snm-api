@@ -27,7 +27,7 @@ const app = express();
 const webPort = env.WEB_API_PORT;
 const sessionSecret = env.SESSION_SECRET;
 
-const vueLocation = env.VUE_LOCATION;
+const corsOrigins = env.CORS_ORIGINS;
 
 const store = new session.MemoryStore();
 
@@ -91,7 +91,7 @@ app.use(function (req, res, next) {
 
 app.use(
   cors({
-    origin: vueLocation,
+    origin: corsOrigins,
     credentials: true,
   })
 );
